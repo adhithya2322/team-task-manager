@@ -1,70 +1,87 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import API from "../services/api";
 
-function Login() {
-
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = async (e) => {
-
-    e.preventDefault();
-
+  // LOGIN
+  const handleLogin = async () => {
     try {
-
       const res = await API.post("/auth/login", {
         email,
         password,
       });
 
-      localStorage.setItem("token", res.data.token);
-
       alert("Login Successful");
-
       console.log(res.data);
-
-    } catch (error) {
-
-      console.log(error);
-
+    } catch (err) {
+      console.log(err);
       alert("Login Failed");
     }
   };
 
+  // REGISTER
+  const handleRegister = async () => {
+    try {
+      const res = await API.post("/auth/register", {
+        email,
+        password,
+      });
+
+      alert("Registered Successfully");
+      console.log(res.data);
+    } catch (err) {
+      console.log(err);
+      alert("Register Failed");
+    }
+  };
+
   return (
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "#0b1020",
+        color: "white",
+      }}
+    >
+      <h1>Task Manager Login</h1>
 
-    <div style={{ padding: "40px" }}>
+      <input
+        type="email"
+        placeholder="Enter Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={{
+          margin: "10px",
+          padding: "10px",
+          width: "250px",
+        }}
+      />
 
-      <h1>Login</h1>
+      <input
+        type="password"
+        placeholder="Enter Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        style={{
+          margin: "10px",
+          padding: "10px",
+          width: "250px",
+        }}
+      />
 
-      <form onSubmit={handleLogin}>
+      <div style={{ display: "flex", gap: "10px" }}>
+        <button onClick={handleLogin}>Login</button>
 
-        <input
-          type="email"
-          placeholder="Enter Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-
-        <br /><br />
-
-        <input
-          type="password"
-          placeholder="Enter Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        <br /><br />
-
-        <button type="submit">
-          Login
-        </button>
-
-      </form>
-
+        <button onClick={handleRegister}>Register</button>
+      </div>
     </div>
   );
-}
+};
 
 export default Login;
