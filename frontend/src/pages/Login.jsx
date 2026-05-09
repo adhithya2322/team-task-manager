@@ -1,39 +1,65 @@
 import React, { useState } from "react";
-import API from "../services/api";
+import axios from "axios";
 
-const Login = () => {
+const API =
+  "https://team-task-manager-production-d8ce.up.railway.app";
+
+function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // LOGIN
-  const handleLogin = async () => {
-    try {
-      const res = await API.post("/auth/login", {
-        email,
-        password,
-      });
-
-      alert("Login Successful");
-      console.log(res.data);
-    } catch (err) {
-      console.log(err);
-      alert("Login Failed");
-    }
-  };
 
   // REGISTER
   const handleRegister = async () => {
     try {
-      const res = await API.post("/auth/register", {
-        email,
-        password,
-      });
+      const res = await axios.post(
+        `${API}/api/auth/register`,
+        {
+          email,
+          password,
+        }
+      );
 
       alert("Registered Successfully");
+
       console.log(res.data);
+
     } catch (err) {
       console.log(err);
-      alert("Register Failed");
+
+      alert(
+        err.response?.data?.message ||
+        "Register Failed"
+      );
+    }
+  };
+
+  // LOGIN
+  const handleLogin = async () => {
+    try {
+      const res = await axios.post(
+        `${API}/api/auth/login`,
+        {
+          email,
+          password,
+        }
+      );
+
+      localStorage.setItem(
+        "token",
+        res.data.token
+      );
+
+      alert("Login Successful");
+
+      console.log(res.data);
+
+    } catch (err) {
+      console.log(err);
+
+      alert(
+        err.response?.data?.message ||
+        "Login Failed"
+      );
     }
   };
 
@@ -45,20 +71,28 @@ const Login = () => {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        background: "#0b1020",
-        color: "white",
+        backgroundColor: "#0f172a",
       }}
     >
-      <h1>Task Manager Login</h1>
+      <h1
+        style={{
+          color: "white",
+          marginBottom: "20px",
+        }}
+      >
+        Task Manager Login
+      </h1>
 
       <input
         type="email"
         placeholder="Enter Email"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        onChange={(e) =>
+          setEmail(e.target.value)
+        }
         style={{
-          margin: "10px",
           padding: "10px",
+          marginBottom: "10px",
           width: "250px",
         }}
       />
@@ -67,21 +101,32 @@ const Login = () => {
         type="password"
         placeholder="Enter Password"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={(e) =>
+          setPassword(e.target.value)
+        }
         style={{
-          margin: "10px",
           padding: "10px",
+          marginBottom: "20px",
           width: "250px",
         }}
       />
 
-      <div style={{ display: "flex", gap: "10px" }}>
-        <button onClick={handleLogin}>Login</button>
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+        }}
+      >
+        <button onClick={handleRegister}>
+          Register
+        </button>
 
-        <button onClick={handleRegister}>Register</button>
+        <button onClick={handleLogin}>
+          Login
+        </button>
       </div>
     </div>
   );
-};
+}
 
 export default Login;
