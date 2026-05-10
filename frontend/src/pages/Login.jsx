@@ -1,129 +1,123 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
-
-const API =
-  "https://team-task-manager-production-d8ce.up.railway.app";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // REGISTER
-  const handleRegister = async () => {
+  const navigate = useNavigate();
+
+  const registerUser = async () => {
     try {
       const res = await axios.post(
-        `${API}/api/auth/register`,
+        "http://localhost:5000/api/auth/register",
         {
           email,
           password,
         }
       );
 
-      alert("Registered Successfully");
-
-      console.log(res.data);
-
-    } catch (err) {
-      console.log(err);
-
-      alert(
-        err.response?.data?.message ||
-        "Register Failed"
-      );
+      alert(res.data.message || "Register Success");
+    } catch (error) {
+      alert(error.response?.data?.message || "Register Failed");
     }
   };
 
-  // LOGIN
-  const handleLogin = async () => {
+  const loginUser = async () => {
     try {
       const res = await axios.post(
-        `${API}/api/auth/login`,
+        "http://localhost:5000/api/auth/login",
         {
           email,
           password,
         }
       );
 
-      localStorage.setItem(
-        "token",
-        res.data.token
-      );
+      alert(res.data.message || "Login Success");
 
-      alert("Login Successful");
+      localStorage.setItem("token", res.data.token);
 
-      console.log(res.data);
-
-    } catch (err) {
-      console.log(err);
-
-      alert(
-        err.response?.data?.message ||
-        "Login Failed"
-      );
+      navigate("/dashboard");
+    } catch (error) {
+      alert(error.response?.data?.message || "Login Failed");
     }
   };
 
   return (
     <div
       style={{
-        height: "100vh",
+        minHeight: "100vh",
+        backgroundColor: "#0b1020",
         display: "flex",
-        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#0f172a",
       }}
     >
-      <h1
-        style={{
-          color: "white",
-          marginBottom: "20px",
-        }}
-      >
-        Task Manager Login
-      </h1>
-
-      <input
-        type="email"
-        placeholder="Enter Email"
-        value={email}
-        onChange={(e) =>
-          setEmail(e.target.value)
-        }
-        style={{
-          padding: "10px",
-          marginBottom: "10px",
-          width: "250px",
-        }}
-      />
-
-      <input
-        type="password"
-        placeholder="Enter Password"
-        value={password}
-        onChange={(e) =>
-          setPassword(e.target.value)
-        }
-        style={{
-          padding: "10px",
-          marginBottom: "20px",
-          width: "250px",
-        }}
-      />
-
       <div
         style={{
-          display: "flex",
-          gap: "10px",
+          width: "400px",
+          textAlign: "center",
+          color: "white",
         }}
       >
-        <button onClick={handleRegister}>
-          Register
-        </button>
+        <h1 style={{ marginBottom: "30px" }}>
+          Task Manager Login
+        </h1>
 
-        <button onClick={handleLogin}>
-          Login
-        </button>
+        <input
+          type="email"
+          placeholder="Enter Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "12px",
+            marginBottom: "20px",
+            fontSize: "16px",
+          }}
+        />
+
+        <input
+          type="password"
+          placeholder="Enter Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "12px",
+            marginBottom: "20px",
+            fontSize: "16px",
+          }}
+        />
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "20px",
+          }}
+        >
+          <button
+            onClick={registerUser}
+            style={{
+              padding: "10px 20px",
+              cursor: "pointer",
+            }}
+          >
+            Register
+          </button>
+
+          <button
+            onClick={loginUser}
+            style={{
+              padding: "10px 20px",
+              cursor: "pointer",
+            }}
+          >
+            Login
+          </button>
+        </div>
       </div>
     </div>
   );

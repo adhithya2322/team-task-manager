@@ -7,24 +7,24 @@ const taskSchema = new mongoose.Schema(
       required: true,
     },
 
-    description: {
+    project: {
       type: String,
       required: true,
     },
 
     assignedTo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type: String,
+      required: true,
+    },
+
+    dueDate: {
+      type: Date,
+      required: true,
     },
 
     status: {
       type: String,
-      enum: ["Pending", "Completed"],
       default: "Pending",
-    },
-
-    deadline: {
-      type: Date,
     },
   },
   {
