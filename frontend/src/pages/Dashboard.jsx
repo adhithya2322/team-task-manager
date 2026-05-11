@@ -1,73 +1,70 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_URL =
-  "https://team-task-manager-production-997b.up.railway.app";
+import {
+  getProjects,
+  createProject,
+  deleteProject,
+} from "../services/projectService";
 
-function Dashboard() {
+import {
+  getTasks,
+  createTask,
+  deleteTask,
+  updateTaskStatus,
+} from "../services/taskService";
+
+const Dashboard = () => {
   const navigate = useNavigate();
 
-  const user = JSON.parse(
-    localStorage.getItem("user")
-  );
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
 
-  // PROJECT STATES
-  const [title, setTitle] = useState("");
-  const [description, setDescription] =
-    useState("");
+  const [projectData, setProjectData] = useState({
+    title: "",
+    description: "",
+  });
 
-  // TASK STATES
-  const [taskTitle, setTaskTitle] =
-    useState("");
+  const [taskData, setTaskData] = useState({
+    title: "",
+    description: "",
+    project: "",
+    assignedTo: "",
+    status: "Pending",
+    priority: "Medium",
+    dueDate: "",
+  });
 
-  const [taskDescription, setTaskDescription] =
-    useState("");
+  // ================= FETCH PROJECTS =================
 
-  const [selectedProject, setSelectedProject] =
-    useState("");
-
-  const [assignedMember, setAssignedMember] =
-    useState("");
-
-  const [taskStatus, setTaskStatus] =
-    useState("Pending");
-
-  const [priority, setPriority] =
-    useState("Medium");
-
-  const [dueDate, setDueDate] = useState("");
-
-  // LOGOUT
-  const logout = () => {
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
-
-  // FETCH PROJECTS
   const fetchProjects = async () => {
     try {
-      const res = await axios.get(
-        `${API_URL}/api/projects`
-      );
-
+      const res = await getProjects();
       setProjects(res.data);
     } catch (error) {
       console.log(error);
     }
   };
 
-  // FETCH TASKS
+  // ================= FETCH TASKS =================
+
   const fetchTasks = async () => {
     try {
-      const res = await axios.get(
-        `${API_URL}/api/tasks`
-      );
+      const res = await getTasks();
 
-      setTasks(res.data);
+      // MEMBER -> ONLY ASSIGNED TASKS
+      if (user.role === "Member") {
+        const filteredTasks = res.data.filter(
+          (task) => task.assignedTo === user.email
+        );
+
+        setTasks(filteredTasks);
+      } else {
+        // ADMIN -> ALL TASKS
+        setTasks(res.data);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -78,140 +75,97 @@ function Dashboard() {
     fetchTasks();
   }, []);
 
-  // CREATE PROJECT
-  const createProject = async () => {
-    if (!title || !description) {
-      alert("Fill all fields");
-      return;
-    }
+  // ================= LOGOUT =================
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
+  // ================= CREATE PROJECT =================
+
+  const handleCreateProject = async (e) => {
+    e.preventDefault();
 
     try {
-      const res = await axios.post(
-        `${API_URL}/api/projects`,
-        {
-          title,
-          description,
-        }
-      );
+      await createProject(projectData);
 
-      setProjects([res.data, ...projects]);
+      setProjectData({
+        title: "",
+        description: "",
+      });
 
-      setTitle("");
-      setDescription("");
+      fetchProjects();
 
-      alert("Project created");
+      alert("Project created successfully");
     } catch (error) {
       console.log(error);
-
       alert("Project creation failed");
     }
   };
 
-  // DELETE PROJECT
-  const deleteProject = async (id) => {
+  // ================= DELETE PROJECT =================
+
+  const handleDeleteProject = async (id) => {
     try {
-      await axios.delete(
-        `${API_URL}/api/projects/${id}`
-      );
-
-      setProjects(
-        projects.filter(
-          (project) => project._id !== id
-        )
-      );
-
-      alert("Project deleted");
+      await deleteProject(id);
+      fetchProjects();
     } catch (error) {
       console.log(error);
-
-      alert("Delete failed");
     }
   };
 
-  // CREATE TASK
-  const createTask = async () => {
-    if (!taskTitle) {
-      alert("Enter task title");
-      return;
-    }
+  // ================= CREATE TASK =================
+
+  const handleCreateTask = async (e) => {
+    e.preventDefault();
 
     try {
-      const res = await axios.post(
-        `${API_URL}/api/tasks`,
-        {
-          title: taskTitle,
-          description: taskDescription,
-          project: selectedProject,
-          assignedTo: assignedMember,
-          status: taskStatus,
-          priority,
-          dueDate,
-        }
-      );
+      await createTask(taskData);
 
-      setTasks([res.data, ...tasks]);
+      setTaskData({
+        title: "",
+        description: "",
+        project: "",
+        assignedTo: "",
+        status: "Pending",
+        priority: "Medium",
+        dueDate: "",
+      });
 
-      setTaskTitle("");
-      setTaskDescription("");
-      setSelectedProject("");
-      setAssignedMember("");
-      setTaskStatus("Pending");
-      setPriority("Medium");
-      setDueDate("");
+      fetchTasks();
 
-      alert("Task created");
+      alert("Task created successfully");
     } catch (error) {
       console.log(error);
-
       alert("Task creation failed");
     }
   };
 
-  // DELETE TASK
-  const deleteTask = async (id) => {
+  // ================= DELETE TASK =================
+
+  const handleDeleteTask = async (id) => {
     try {
-      await axios.delete(
-        `${API_URL}/api/tasks/${id}`
-      );
-
-      setTasks(
-        tasks.filter((task) => task._id !== id)
-      );
-
-      alert("Task deleted");
+      await deleteTask(id);
+      fetchTasks();
     } catch (error) {
       console.log(error);
-
-      alert("Delete failed");
     }
   };
 
-  // UPDATE TASK STATUS
-  const updateTaskStatus = async (
-    id,
-    newStatus
-  ) => {
-    try {
-      const res = await axios.put(
-        `${API_URL}/api/tasks/${id}`,
-        {
-          status: newStatus,
-        }
-      );
+  // ================= UPDATE STATUS =================
 
-      setTasks(
-        tasks.map((task) =>
-          task._id === id ? res.data : task
-        )
-      );
+  const handleStatusChange = async (id, status) => {
+    try {
+      await updateTaskStatus(id, status);
+      fetchTasks();
     } catch (error) {
       console.log(error);
-
-      alert("Status update failed");
     }
   };
 
-  // COUNTS
+  // ================= COUNTS =================
+
   const pendingCount = tasks.filter(
     (task) => task.status === "Pending"
   ).length;
@@ -220,16 +174,17 @@ function Dashboard() {
     (task) => task.status === "Completed"
   ).length;
 
-  const inProgressCount = tasks.filter(
-    (task) =>
-      task.status === "In Progress"
+  const progressCount = tasks.filter(
+    (task) => task.status === "In Progress"
   ).length;
 
-  const overdueTasks = tasks.filter(
-    (task) =>
+  const overdueCount = tasks.filter((task) => {
+    return (
+      task.dueDate &&
       new Date(task.dueDate) < new Date() &&
       task.status !== "Completed"
-  ).length;
+    );
+  }).length;
 
   return (
     <div style={{ padding: "20px" }}>
@@ -239,39 +194,33 @@ function Dashboard() {
         Welcome {user?.name} ({user?.role})
       </h2>
 
-      <button onClick={logout}>
-        Logout
-      </button>
+      <button onClick={handleLogout}>Logout</button>
 
       <hr />
 
-      <h3>Pending Tasks: {pendingCount}</h3>
-
-      <h3>
-        Completed Tasks: {completedCount}
-      </h3>
-
-      <h3>
-        In Progress Tasks: {inProgressCount}
-      </h3>
-
-      <h3>Overdue Tasks: {overdueTasks}</h3>
+      <h2>Pending Tasks: {pendingCount}</h2>
+      <h2>Completed Tasks: {completedCount}</h2>
+      <h2>In Progress Tasks: {progressCount}</h2>
+      <h2>Overdue Tasks: {overdueCount}</h2>
 
       <hr />
 
-      {/* ADMIN ONLY */}
-      {user?.role === "Admin" && (
+      {/* ================= ADMIN ONLY PROJECT SECTION ================= */}
+
+      {user.role === "Admin" && (
         <>
-          {/* CREATE PROJECT */}
-          <h2>Create Project</h2>
+          <h1>Create Project</h1>
 
-          <div>
+          <form onSubmit={handleCreateProject}>
             <input
               type="text"
               placeholder="Project Title"
-              value={title}
+              value={projectData.title}
               onChange={(e) =>
-                setTitle(e.target.value)
+                setProjectData({
+                  ...projectData,
+                  title: e.target.value,
+                })
               }
             />
 
@@ -281,48 +230,44 @@ function Dashboard() {
             <input
               type="text"
               placeholder="Project Description"
-              value={description}
+              value={projectData.description}
               onChange={(e) =>
-                setDescription(
-                  e.target.value
-                )
+                setProjectData({
+                  ...projectData,
+                  description: e.target.value,
+                })
               }
             />
 
             <br />
             <br />
 
-            <button onClick={createProject}>
-              Create Project
-            </button>
-          </div>
+            <button type="submit">Create Project</button>
+          </form>
 
           <hr />
         </>
       )}
 
-      {/* PROJECTS */}
+      {/* ================= PROJECTS ================= */}
+
       <h1>Projects</h1>
 
       {projects.map((project) => (
         <div
           key={project._id}
           style={{
-            border: "1px solid black",
+            border: "1px solid gray",
+            margin: "10px",
             padding: "10px",
-            marginBottom: "10px",
           }}
         >
           <h2>{project.title}</h2>
 
           <p>{project.description}</p>
 
-          {user?.role === "Admin" && (
-            <button
-              onClick={() =>
-                deleteProject(project._id)
-              }
-            >
+          {user.role === "Admin" && (
+            <button onClick={() => handleDeleteProject(project._id)}>
               Delete
             </button>
           )}
@@ -331,210 +276,193 @@ function Dashboard() {
 
       <hr />
 
-      {/* CREATE TASK */}
-      <h2>Create Task</h2>
+      {/* ================= ADMIN ONLY TASK SECTION ================= */}
 
-      <div>
-        <input
-          type="text"
-          placeholder="Task Title"
-          value={taskTitle}
-          onChange={(e) =>
-            setTaskTitle(e.target.value)
-          }
-        />
+      {user.role === "Admin" && (
+        <>
+          <h1>Create Task</h1>
 
-        <br />
-        <br />
+          <form onSubmit={handleCreateTask}>
+            <input
+              type="text"
+              placeholder="Task Title"
+              value={taskData.title}
+              onChange={(e) =>
+                setTaskData({
+                  ...taskData,
+                  title: e.target.value,
+                })
+              }
+            />
 
-        <input
-          type="text"
-          placeholder="Description"
-          value={taskDescription}
-          onChange={(e) =>
-            setTaskDescription(
-              e.target.value
-            )
-          }
-        />
+            <br />
+            <br />
 
-        <br />
-        <br />
+            <input
+              type="text"
+              placeholder="Description"
+              value={taskData.description}
+              onChange={(e) =>
+                setTaskData({
+                  ...taskData,
+                  description: e.target.value,
+                })
+              }
+            />
 
-        <select
-          value={selectedProject}
-          onChange={(e) =>
-            setSelectedProject(
-              e.target.value
-            )
-          }
-        >
-          <option value="">
-            Select Project
-          </option>
+            <br />
+            <br />
 
-          {projects.map((project) => (
-            <option
-              key={project._id}
-              value={project._id}
+            <select
+              value={taskData.project}
+              onChange={(e) =>
+                setTaskData({
+                  ...taskData,
+                  project: e.target.value,
+                })
+              }
             >
-              {project.title}
-            </option>
-          ))}
-        </select>
+              <option value="">Select Project</option>
 
-        <br />
-        <br />
+              {projects.map((project) => (
+                <option key={project._id} value={project.title}>
+                  {project.title}
+                </option>
+              ))}
+            </select>
 
-        <input
-          type="text"
-          placeholder="Assign Member"
-          value={assignedMember}
-          onChange={(e) =>
-            setAssignedMember(
-              e.target.value
-            )
-          }
-        />
+            <br />
+            <br />
 
-        <br />
-        <br />
+            <input
+              type="text"
+              placeholder="Assign Member Email"
+              value={taskData.assignedTo}
+              onChange={(e) =>
+                setTaskData({
+                  ...taskData,
+                  assignedTo: e.target.value,
+                })
+              }
+            />
 
-        <select
-          value={taskStatus}
-          onChange={(e) =>
-            setTaskStatus(
-              e.target.value
-            )
-          }
-        >
-          <option value="Pending">
-            Pending
-          </option>
+            <br />
+            <br />
 
-          <option value="In Progress">
-            In Progress
-          </option>
+            <select
+              value={taskData.status}
+              onChange={(e) =>
+                setTaskData({
+                  ...taskData,
+                  status: e.target.value,
+                })
+              }
+            >
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
 
-          <option value="Completed">
-            Completed
-          </option>
-        </select>
+            <br />
+            <br />
 
-        <br />
-        <br />
+            <select
+              value={taskData.priority}
+              onChange={(e) =>
+                setTaskData({
+                  ...taskData,
+                  priority: e.target.value,
+                })
+              }
+            >
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
 
-        <select
-          value={priority}
-          onChange={(e) =>
-            setPriority(
-              e.target.value
-            )
-          }
-        >
-          <option value="Low">Low</option>
+            <br />
+            <br />
 
-          <option value="Medium">
-            Medium
-          </option>
+            <input
+              type="date"
+              value={taskData.dueDate}
+              onChange={(e) =>
+                setTaskData({
+                  ...taskData,
+                  dueDate: e.target.value,
+                })
+              }
+            />
 
-          <option value="High">High</option>
-        </select>
+            <br />
+            <br />
 
-        <br />
-        <br />
+            <button type="submit">Add Task</button>
+          </form>
 
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(e) =>
-            setDueDate(
-              e.target.value
-            )
-          }
-        />
+          <hr />
+        </>
+      )}
 
-        <br />
-        <br />
+      {/* ================= TASKS ================= */}
 
-        <button onClick={createTask}>
-          Add Task
-        </button>
-      </div>
-
-      <hr />
-
-      {/* TASKS */}
       <h1>Tasks</h1>
 
       {tasks.map((task) => (
         <div
           key={task._id}
           style={{
-            border: "1px solid black",
+            border: "1px solid gray",
+            margin: "10px",
             padding: "10px",
-            marginBottom: "10px",
           }}
         >
           <h2>{task.title}</h2>
 
-          <p>
-            Description: {task.description}
-          </p>
+          <p>Description: {task.description}</p>
 
           <p>Status: {task.status}</p>
 
           <p>Priority: {task.priority}</p>
 
-          <p>
-            Assigned To: {task.assignedTo}
-          </p>
+          <p>Assigned To: {task.assignedTo}</p>
+
+          <p>Project: {task.project}</p>
 
           <p>
             Due Date:{" "}
             {task.dueDate
-              ? new Date(
-                  task.dueDate
-                ).toLocaleDateString()
+              ? new Date(task.dueDate).toLocaleDateString()
               : "No Date"}
           </p>
+
+          {/* STATUS UPDATE FOR BOTH ADMIN & MEMBER */}
 
           <select
             value={task.status}
             onChange={(e) =>
-              updateTaskStatus(
-                task._id,
-                e.target.value
-              )
+              handleStatusChange(task._id, e.target.value)
             }
           >
-            <option value="Pending">
-              Pending
-            </option>
-
-            <option value="In Progress">
-              In Progress
-            </option>
-
-            <option value="Completed">
-              Completed
-            </option>
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
           </select>
 
           <br />
           <br />
 
-          <button
-            onClick={() =>
-              deleteTask(task._id)
-            }
-          >
-            Delete
-          </button>
+          {/* DELETE ONLY FOR ADMIN */}
+
+          {user.role === "Admin" && (
+            <button onClick={() => handleDeleteTask(task._id)}>
+              Delete
+            </button>
+          )}
         </div>
       ))}
     </div>
   );
-}
+};
 
 export default Dashboard;

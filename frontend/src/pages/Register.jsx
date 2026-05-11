@@ -1,23 +1,35 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const API_URL =
-  "https://your-backend-url.up.railway.app";
+  "https://team-task-manager-production-997b.up.railway.app";
 
-export default function Register() {
+function Register() {
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("Member");
+  const [password, setPassword] =
+    useState("");
+
+  const [role, setRole] =
+    useState("Member");
 
   const handleRegister = async (e) => {
     e.preventDefault();
 
+    if (
+      !name ||
+      !email ||
+      !password
+    ) {
+      alert("Fill all fields");
+      return;
+    }
+
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         `${API_URL}/api/auth/register`,
         {
           name,
@@ -27,31 +39,21 @@ export default function Register() {
         }
       );
 
-      alert("Registration Successful");
+      alert("Registration successful");
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(response.data)
-      );
-
-      navigate("/dashboard");
+      navigate("/login");
     } catch (error) {
       console.log(error);
 
       alert(
-        error.response?.data?.message ||
+        error?.response?.data?.message ||
           "Registration failed"
       );
     }
   };
 
   return (
-    <div
-      style={{
-        width: "350px",
-        margin: "50px auto",
-      }}
-    >
+    <div style={{ padding: "20px" }}>
       <h1>Register</h1>
 
       <form onSubmit={handleRegister}>
@@ -62,13 +64,10 @@ export default function Register() {
           onChange={(e) =>
             setName(e.target.value)
           }
-          required
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
         />
+
+        <br />
+        <br />
 
         <input
           type="email"
@@ -77,65 +76,58 @@ export default function Register() {
           onChange={(e) =>
             setEmail(e.target.value)
           }
-          required
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
         />
+
+        <br />
+        <br />
 
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) =>
-            setPassword(e.target.value)
+            setPassword(
+              e.target.value
+            )
           }
-          required
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
         />
+
+        <br />
+        <br />
 
         <select
           value={role}
           onChange={(e) =>
             setRole(e.target.value)
           }
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
         >
-          <option value="Member">
-            Member
-          </option>
-
           <option value="Admin">
             Admin
           </option>
+
+          <option value="Member">
+            Member
+          </option>
         </select>
 
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "10px",
-            cursor: "pointer",
-          }}
-        >
+        <br />
+        <br />
+
+        <button type="submit">
           Register
         </button>
       </form>
 
-      <p style={{ marginTop: "15px" }}>
-        Already have an account?{" "}
-        <Link to="/login">Login</Link>
+      <br />
+
+      <p>
+        Already have account?{" "}
+        <Link to="/login">
+          Login
+        </Link>
       </p>
     </div>
   );
 }
+
+export default Register;
