@@ -10,6 +10,9 @@ function Login() {
     password: "",
   });
 
+  const API_URL =
+    "https://team-task-manager-production-997b.up.railway.app/api/auth";
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -22,26 +25,33 @@ function Login() {
 
     try {
       const response = await axios.post(
-        "https://team-task-manager-production-997b.up.railway.app/api/auth/login",
+        `${API_URL}/login`,
         formData
       );
 
-      localStorage.setItem("token", response.data.token);
+      console.log(response.data);
+
+      localStorage.setItem(
+        "token",
+        response.data.token
+      );
+
       localStorage.setItem(
         "user",
         JSON.stringify(response.data.user)
       );
 
-      alert("Login successful");
+      alert("Login Successful");
 
       navigate("/dashboard");
     } catch (error) {
-      console.log(error);
+      console.log("LOGIN ERROR:", error);
 
-      alert(
-        error.response?.data?.message ||
-          "Login failed"
-      );
+      if (error.response) {
+        alert(error.response.data.message);
+      } else {
+        alert("Server connection failed");
+      }
     }
   };
 

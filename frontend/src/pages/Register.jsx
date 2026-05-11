@@ -12,6 +12,9 @@ function Register() {
     role: "Admin",
   });
 
+  const API_URL =
+    "https://team-task-manager-production-997b.up.railway.app/api/auth";
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -23,21 +26,24 @@ function Register() {
     e.preventDefault();
 
     try {
-      await axios.post(
-        "https://team-task-manager-production-997b.up.railway.app/api/auth/register",
+      const response = await axios.post(
+        `${API_URL}/register`,
         formData
       );
 
-      alert("Registration successful");
+      console.log(response.data);
+
+      alert("Registration Successful");
 
       navigate("/");
     } catch (error) {
-      console.log(error);
+      console.log("REGISTER ERROR:", error);
 
-      alert(
-        error.response?.data?.message ||
-          "Registration failed"
-      );
+      if (error.response) {
+        alert(error.response.data.message);
+      } else {
+        alert("Server connection failed");
+      }
     }
   };
 
@@ -94,16 +100,12 @@ function Register() {
         <br />
         <br />
 
-        <button type="submit">
-          Register
-        </button>
+        <button type="submit">Register</button>
       </form>
 
       <br />
 
-      <Link to="/">
-        Login
-      </Link>
+      <Link to="/">Login</Link>
     </div>
   );
 }
