@@ -1,15 +1,15 @@
 const express = require("express");
 const router = express.Router();
 
-const Task = require("../models/Task");
+const Project = require("../models/Project");
 
 
-// GET ALL TASKS
+// GET PROJECTS
 router.get("/", async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const projects = await Project.find();
 
-    res.json(tasks);
+    res.json(projects);
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -18,22 +18,17 @@ router.get("/", async (req, res) => {
 });
 
 
-// CREATE TASK
+// CREATE PROJECT
 router.post("/", async (req, res) => {
   try {
-    const newTask = new Task({
-      title: req.body.title,
+    const newProject = new Project({
+      name: req.body.name,
       description: req.body.description,
-      project: req.body.project,
-      assignedTo: req.body.assignedTo,
-      status: req.body.status,
-      priority: req.body.priority,
-      dueDate: req.body.dueDate,
     });
 
-    const savedTask = await newTask.save();
+    const savedProject = await newProject.save();
 
-    res.status(201).json(savedTask);
+    res.status(201).json(savedProject);
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -42,13 +37,13 @@ router.post("/", async (req, res) => {
 });
 
 
-// DELETE TASK
+// DELETE PROJECT
 router.delete("/:id", async (req, res) => {
   try {
-    await Task.findByIdAndDelete(req.params.id);
+    await Project.findByIdAndDelete(req.params.id);
 
     res.json({
-      message: "Task deleted",
+      message: "Project deleted",
     });
   } catch (error) {
     res.status(500).json({

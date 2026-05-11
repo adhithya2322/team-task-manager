@@ -1,74 +1,125 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const Dashboard = () => {
-  const [tasks, setTasks] = useState([]);
-
-  const [title, setTitle] = useState("");
-  const [project, setProject] = useState("");
-  const [assignedTo, setAssignedTo] = useState("");
-  const [dueDate, setDueDate] = useState("");
-
-  const [loading, setLoading] = useState(false);
+function Dashboard() {
+  const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user"));
+
+  const [projects, setProjects] = useState([]);
+  const [tasks, setTasks] = useState([]);
+
+  const [projectName, setProjectName] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [project, setProject] = useState("");
+  const [assignedTo, setAssignedTo] = useState("");
+  const [status, setStatus] = useState("Pending");
+  const [priority, setPriority] = useState("Medium");
+  const [dueDate, setDueDate] = useState("");
+
+  // FETCH PROJECTS
+  const fetchProjects = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:5000/api/projects"
+      );
+
+      setProjects(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   // FETCH TASKS
   const fetchTasks = async () => {
     try {
-      setLoading(true);
-
-      const response = await axios.get(
+      const res = await axios.get(
         "http://localhost:5000/api/tasks"
       );
 
-      setTasks(response.data);
-
-      setLoading(false);
+      setTasks(res.data);
     } catch (error) {
       console.log(error);
-      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  // CREATE PROJECT
+  const createProject = async (e) => {
+    e.preventDefault();
 
-  // ADD TASK
-  const addTask = async () => {
-    if (
-      !title ||
-      !project ||
-      !assignedTo ||
-      !dueDate
-    ) {
-      alert("Please fill all fields");
-      return;
+    try {
+      await axios.post(
+        "http://localhost:5000/api/projects",
+        {
+          name: projectName,
+          description: projectDescription,
+        }
+      );
+
+      alert("Project Created");
+
+      setProjectName("");
+      setProjectDescription("");
+
+      fetchProjects();
+    } catch (error) {
+      console.log(error);
+      alert("Project creation failed");
     }
+  };
+
+  // CREATE TASK
+  const createTask = async (e) => {
+    e.preventDefault();
 
     try {
       await axios.post(
         "http://localhost:5000/api/tasks",
         {
           title,
+          description,
           project,
           assignedTo,
+          status,
+          priority,
           dueDate,
         }
       );
 
-      alert("Task Added");
+      alert("Task Created");
 
       setTitle("");
+      setDescription("");
       setProject("");
       setAssignedTo("");
+      setStatus("Pending");
+      setPriority("Medium");
       setDueDate("");
 
       fetchTasks();
     } catch (error) {
       console.log(error);
       alert("Task creation failed");
+    }
+  };
+
+  // DELETE PROJECT
+  const deleteProject = async (id) => {
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/projects/${id}`
+      );
+
+      alert("Project Deleted");
+
+      fetchProjects();
+    } catch (error) {
+      console.log(error);
+      alert("Delete failed");
     }
   };
 
@@ -79,312 +130,314 @@ const Dashboard = () => {
         `http://localhost:5000/api/tasks/${id}`
       );
 
-      fetchTasks();
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // UPDATE STATUS
-  const updateStatus = async (id, status) => {
-    try {
-      await axios.put(
-        `http://localhost:5000/api/tasks/${id}`,
-        {
-          status,
-        }
-      );
+      alert("Task Deleted");
 
       fetchTasks();
     } catch (error) {
       console.log(error);
+      alert("Delete failed");
     }
   };
 
-  // COUNTS
-  const completedTasks = tasks.filter(
-    (task) => task.status === "Completed"
-  );
-
-  const pendingTasks = tasks.filter(
-    (task) => task.status === "Pending"
-  );
-
-  const progressTasks = tasks.filter(
-    (task) => task.status === "In Progress"
-  );
+  // LOAD DATA
+  useEffect(() => {
+    fetchProjects();
+    fetchTasks();
+  }, []);
 
   // LOGOUT
   const logout = () => {
     localStorage.removeItem("user");
-    window.location.reload();
+
+    navigate("/");
   };
 
+  // ANALYTICS
+  const totalTasks = tasks.length;
+
+  const completedTasks = tasks.filter(
+    (task) => task.status === "Completed"
+  ).length;
+
+  const pendingTasks = tasks.filter(
+    (task) => task.status === "Pending"
+  ).length;
+
+  const inProgressTasks = tasks.filter(
+    (task) => task.status === "In Progress"
+  ).length;
+
   return (
-    <div
-      style={{
-        background: "#041138",
-        minHeight: "100vh",
-        color: "white",
-        padding: "40px",
-      }}
-    >
-      {/* HEADER */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div>
-          <h1>Team Task Dashboard</h1>
+    <div style={{ padding: "20px" }}>
+      <h1>Team Task Dashboard</h1>
 
-          <h3>
-            Role: {user?.role}
-          </h3>
-        </div>
+      <h2>
+        Welcome ({user?.role || "Admin"})
+      </h2>
 
-        <button
-          onClick={logout}
-          style={{
-            background: "crimson",
-            color: "white",
-            border: "none",
-            padding: "12px 20px",
-            borderRadius: "6px",
-            cursor: "pointer",
-          }}
-        >
-          Logout
+      <button onClick={logout}>Logout</button>
+
+      <hr />
+
+      {/* CREATE PROJECT */}
+      <h2>Create Project</h2>
+
+      <form onSubmit={createProject}>
+        <input
+          type="text"
+          placeholder="Project Name"
+          value={projectName}
+          onChange={(e) =>
+            setProjectName(e.target.value)
+          }
+          required
+        />
+
+        <br />
+        <br />
+
+        <input
+          type="text"
+          placeholder="Project Description"
+          value={projectDescription}
+          onChange={(e) =>
+            setProjectDescription(e.target.value)
+          }
+          required
+        />
+
+        <br />
+        <br />
+
+        <button type="submit">
+          Create Project
         </button>
-      </div>
+      </form>
 
-      {/* CARDS */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(4,1fr)",
-          gap: "20px",
-          marginTop: "40px",
-        }}
-      >
-        <div className="card">
-          <h1>{tasks.length}</h1>
-          <h2>Total Tasks</h2>
-        </div>
+      <hr />
 
-        <div className="card">
-          <h1>
-            {completedTasks.length}
-          </h1>
-          <h2>Completed</h2>
-        </div>
+      {/* CREATE TASK */}
+      <h2>Create Task</h2>
 
-        <div className="card">
-          <h1>{pendingTasks.length}</h1>
-          <h2>Pending</h2>
-        </div>
+      <form onSubmit={createTask}>
+        <input
+          type="text"
+          placeholder="Task Title"
+          value={title}
+          onChange={(e) =>
+            setTitle(e.target.value)
+          }
+          required
+        />
 
-        <div className="card">
-          <h1>{progressTasks.length}</h1>
-          <h2>In Progress</h2>
-        </div>
-      </div>
+        <br />
+        <br />
 
-      {/* ADD TASK */}
-      {user?.role === "Admin" && (
+        <input
+          type="text"
+          placeholder="Description"
+          value={description}
+          onChange={(e) =>
+            setDescription(e.target.value)
+          }
+          required
+        />
+
+        <br />
+        <br />
+
+        {/* PROJECT SELECT */}
+        <select
+          value={project}
+          onChange={(e) =>
+            setProject(e.target.value)
+          }
+          required
+        >
+          <option value="">
+            Select Project
+          </option>
+
+          {projects.map((proj) => (
+            <option
+              key={proj._id}
+              value={proj.name}
+            >
+              {proj.name}
+            </option>
+          ))}
+        </select>
+
+        <br />
+        <br />
+
+        {/* ASSIGN MEMBER */}
+        <input
+          type="text"
+          placeholder="Assign Member"
+          value={assignedTo}
+          onChange={(e) =>
+            setAssignedTo(e.target.value)
+          }
+        />
+
+        <br />
+        <br />
+
+        {/* STATUS */}
+        <select
+          value={status}
+          onChange={(e) =>
+            setStatus(e.target.value)
+          }
+        >
+          <option value="Pending">
+            Pending
+          </option>
+
+          <option value="In Progress">
+            In Progress
+          </option>
+
+          <option value="Completed">
+            Completed
+          </option>
+        </select>
+
+        <br />
+        <br />
+
+        {/* PRIORITY */}
+        <select
+          value={priority}
+          onChange={(e) =>
+            setPriority(e.target.value)
+          }
+        >
+          <option value="Low">Low</option>
+
+          <option value="Medium">
+            Medium
+          </option>
+
+          <option value="High">High</option>
+        </select>
+
+        <br />
+        <br />
+
+        {/* DATE */}
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(e) =>
+            setDueDate(e.target.value)
+          }
+        />
+
+        <br />
+        <br />
+
+        <button type="submit">
+          Add Task
+        </button>
+      </form>
+
+      <hr />
+
+      {/* ANALYTICS */}
+      <h2>Task Analytics</h2>
+
+      <p>Total Tasks: {totalTasks}</p>
+
+      <p>
+        Completed Tasks: {completedTasks}
+      </p>
+
+      <p>Pending Tasks: {pendingTasks}</p>
+
+      <p>
+        In Progress Tasks: {inProgressTasks}
+      </p>
+
+      <hr />
+
+      {/* PROJECTS */}
+      <h2>Projects</h2>
+
+      {projects.map((proj) => (
         <div
+          key={proj._id}
           style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(5,1fr)",
-            gap: "10px",
-            marginTop: "30px",
+            border: "1px solid black",
+            padding: "10px",
+            marginBottom: "10px",
           }}
         >
-          <input
-            type="text"
-            placeholder="Enter Task"
-            value={title}
-            onChange={(e) =>
-              setTitle(e.target.value)
-            }
-            className="input"
-          />
+          <h3>{proj.name}</h3>
 
-          <input
-            type="text"
-            placeholder="Project Name"
-            value={project}
-            onChange={(e) =>
-              setProject(e.target.value)
-            }
-            className="input"
-          />
-
-          <input
-            type="text"
-            placeholder="Assign To"
-            value={assignedTo}
-            onChange={(e) =>
-              setAssignedTo(e.target.value)
-            }
-            className="input"
-          />
-
-          <input
-            type="date"
-            value={dueDate}
-            onChange={(e) =>
-              setDueDate(e.target.value)
-            }
-            className="input"
-          />
+          <p>{proj.description}</p>
 
           <button
-            onClick={addTask}
-            style={{
-              background: "green",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
+            onClick={() =>
+              deleteProject(proj._id)
+            }
           >
-            Add Task
+            Delete
           </button>
         </div>
-      )}
+      ))}
 
-      {/* LOADING */}
-      {loading && (
-        <h2 style={{ marginTop: "20px" }}>
-          Loading...
-        </h2>
-      )}
+      <hr />
 
       {/* TASKS */}
-      <div style={{ marginTop: "30px" }}>
-        {tasks.map((task) => (
-          <div
-            key={task._id}
-            style={{
-              background: "#1b2a4a",
-              padding: "20px",
-              borderRadius: "10px",
-              marginBottom: "20px",
-            }}
+      <h2>Tasks</h2>
+
+      {tasks.map((task) => (
+        <div
+          key={task._id}
+          style={{
+            border: "1px solid black",
+            padding: "10px",
+            marginBottom: "10px",
+          }}
+        >
+          <h3>{task.title}</h3>
+
+          <p>{task.description}</p>
+
+          <p>
+            <b>Project:</b> {task.project}
+          </p>
+
+          <p>
+            <b>Assigned To:</b>{" "}
+            {task.assignedTo || "Not Assigned"}
+          </p>
+
+          <p>
+            <b>Status:</b> {task.status}
+          </p>
+
+          <p>
+            <b>Priority:</b> {task.priority}
+          </p>
+
+          <p>
+            <b>Due Date:</b> {task.dueDate}
+          </p>
+
+          <button
+            onClick={() =>
+              deleteTask(task._id)
+            }
           >
-            <h2>{task.title}</h2>
-
-            <p>
-              Project: {task.project}
-            </p>
-
-            <p>
-              Status: {task.status}
-            </p>
-
-            <p>
-              Assigned To:{" "}
-              {task.assignedTo}
-            </p>
-
-            <p>
-              Due Date:{" "}
-              {new Date(
-                task.dueDate
-              ).toLocaleDateString()}
-            </p>
-
-            {/* OVERDUE */}
-            {new Date(task.dueDate) <
-              new Date() &&
-              task.status !==
-                "Completed" && (
-                <p
-                  style={{
-                    color: "red",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Overdue
-                </p>
-              )}
-
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                marginTop: "10px",
-              }}
-            >
-              <select
-                value={task.status}
-                onChange={(e) =>
-                  updateStatus(
-                    task._id,
-                    e.target.value
-                  )
-                }
-                style={{
-                  padding: "10px",
-                  borderRadius: "6px",
-                }}
-              >
-                <option>
-                  Pending
-                </option>
-
-                <option>
-                  In Progress
-                </option>
-
-                <option>
-                  Completed
-                </option>
-              </select>
-
-              <button
-                onClick={() =>
-                  deleteTask(task._id)
-                }
-                style={{
-                  background: "crimson",
-                  color: "white",
-                  border: "none",
-                  padding: "10px 15px",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* CSS */}
-      <style>{`
-        .card{
-          background:#1b2a4a;
-          padding:30px;
-          border-radius:10px;
-          text-align:center;
-        }
-
-        .input{
-          padding:12px;
-          border:none;
-          border-radius:6px;
-          width:100%;
-        }
-      `}</style>
+            Delete
+          </button>
+        </div>
+      ))}
     </div>
   );
-};
+}
 
 export default Dashboard;
