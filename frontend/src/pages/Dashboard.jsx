@@ -5,7 +5,29 @@ import { useNavigate } from "react-router-dom";
 function Dashboard() {
   const navigate = useNavigate();
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  // SAFE USER PARSE
+  const storedUser = localStorage.getItem("user");
+
+  let user = null;
+
+  try {
+    user = storedUser
+      ? JSON.parse(storedUser)
+      : null;
+  } catch (error) {
+    console.log("User parse error", error);
+  }
+
+  const token = localStorage.getItem("token");
+
+  const API =
+    "https://team-task-manager-production-997b.up.railway.app/api";
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
 
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -25,12 +47,13 @@ function Dashboard() {
   const fetchProjects = async () => {
     try {
       const res = await axios.get(
-        "https://team-task-manager-production-997b.up.railway.app/api/projects"
+        `${API}/projects`,
+        config
       );
 
-      setProjects(res.data);
+      setProjects(res.data || []);
     } catch (error) {
-      console.log(error);
+      console.log("PROJECT FETCH ERROR", error);
     }
   };
 
@@ -38,12 +61,13 @@ function Dashboard() {
   const fetchTasks = async () => {
     try {
       const res = await axios.get(
-        "https://team-task-manager-production-997b.up.railway.app/api/tasks"
+        `${API}/tasks`,
+        config
       );
 
-      setTasks(res.data);
+      setTasks(res.data || []);
     } catch (error) {
-      console.log(error);
+      console.log("TASK FETCH ERROR", error);
     }
   };
 
@@ -53,11 +77,12 @@ function Dashboard() {
 
     try {
       await axios.post(
-        "https://team-task-manager-production-997b.up.railway.app/api/projects",
+        `${API}/projects`,
         {
           name: projectName,
           description: projectDescription,
-        }
+        },
+        config
       );
 
       alert("Project Created");
@@ -78,7 +103,7 @@ function Dashboard() {
 
     try {
       await axios.post(
-        "https://team-task-manager-production-997b.up.railway.app/api/tasks",
+        `${API}/tasks`,
         {
           title,
           description,
@@ -87,7 +112,8 @@ function Dashboard() {
           status,
           priority,
           dueDate,
-        }
+        },
+        config
       );
 
       alert("Task Created");
@@ -111,7 +137,8 @@ function Dashboard() {
   const deleteProject = async (id) => {
     try {
       await axios.delete(
-        `https://team-task-manager-production-997b.up.railway.app/api/projects/${id}`
+        `${API}/projects/${id}`,
+        config
       );
 
       alert("Project Deleted");
@@ -127,7 +154,8 @@ function Dashboard() {
   const deleteTask = async (id) => {
     try {
       await axios.delete(
-        `https://team-task-manager-production-997b.up.railway.app/api/tasks/${id}`
+        `${API}/tasks/${id}`,
+        config
       );
 
       alert("Task Deleted");
@@ -141,6 +169,11 @@ function Dashboard() {
 
   // LOAD DATA
   useEffect(() => {
+    if (!token) {
+      navigate("/");
+      return;
+    }
+
     fetchProjects();
     fetchTasks();
   }, []);
@@ -148,6 +181,7 @@ function Dashboard() {
   // LOGOUT
   const logout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
 
     navigate("/");
   };
@@ -172,10 +206,13 @@ function Dashboard() {
       <h1>Team Task Dashboard</h1>
 
       <h2>
-        Welcome ({user?.role || "Admin"})
+        Welcome {user?.name || "User"} (
+        {user?.role || "Admin"})
       </h2>
 
-      <button onClick={logout}>Logout</button>
+      <button onClick={logout}>
+        Logout
+      </button>
 
       <hr />
 
@@ -246,7 +283,6 @@ function Dashboard() {
         <br />
         <br />
 
-        {/* PROJECT SELECT */}
         <select
           value={project}
           onChange={(e) =>
@@ -271,7 +307,6 @@ function Dashboard() {
         <br />
         <br />
 
-        {/* ASSIGN MEMBER */}
         <input
           type="text"
           placeholder="Assign Member"
@@ -284,7 +319,6 @@ function Dashboard() {
         <br />
         <br />
 
-        {/* STATUS */}
         <select
           value={status}
           onChange={(e) =>
@@ -307,7 +341,6 @@ function Dashboard() {
         <br />
         <br />
 
-        {/* PRIORITY */}
         <select
           value={priority}
           onChange={(e) =>
@@ -326,7 +359,6 @@ function Dashboard() {
         <br />
         <br />
 
-        {/* DATE */}
         <input
           type="date"
           value={dueDate}
