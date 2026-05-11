@@ -108,32 +108,48 @@ function Dashboard() {
   };
 
   // CREATE PROJECT
-  const createProject = async (e) => {
-    e.preventDefault();
+  const createProject = async () => {
+  try {
+    const token = localStorage.getItem("token");
 
-    try {
-      await axios.post(
-        `${API}/projects`,
-        {
-          name: projectName,
-          description:
-            projectDescription,
+    const response = await axios.post(
+      "https://team-task-manager-production-997b.up.railway.app/api/projects",
+      {
+        name: projectName,
+        description: projectDescription,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        config
+      }
+    );
+
+    console.log(response.data);
+
+    alert("Project created successfully");
+
+    fetchProjects();
+
+    setProjectName("");
+
+    setProjectDescription("");
+
+  } catch (error) {
+    console.log("PROJECT ERROR:", error);
+
+    if (error.response) {
+      console.log(error.response.data);
+
+      alert(
+        error.response.data.message ||
+          "Project creation failed"
       );
-
-      alert("Project Created");
-
-      setProjectName("");
-      setProjectDescription("");
-
-      fetchProjects();
-    } catch (error) {
-      console.log(error);
-
-      alert("Project creation failed");
+    } else {
+      alert("Server connection failed");
     }
-  };
+  }
+};
 
   // CREATE TASK
   const createTask = async (e) => {

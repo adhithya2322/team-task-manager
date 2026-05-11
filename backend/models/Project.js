@@ -2,10 +2,22 @@ const mongoose = require("mongoose");
 
 const projectSchema = new mongoose.Schema(
   {
-    name: String,
-    description: String,
+    name: {
+      type: String,
+      required: true,
+    },
+
+    description: {
+      type: String,
+      default: "",
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-module.exports = mongoose.model("Project", projectSchema);
+module.exports = mongoose.model(
+  "Project",
+  projectSchema
+);
