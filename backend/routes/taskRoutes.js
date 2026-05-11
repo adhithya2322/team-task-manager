@@ -1,27 +1,30 @@
 const express = require("express");
+
 const router = express.Router();
 
 const Task = require("../models/Task");
 
+const {
+  protect,
+} = require("../middleware/authMiddleware");
 
-// GET ALL TASKS
-router.get("/", async (req, res) => {
+// GET TASKS
+router.get("/", protect, async (req, res) => {
   try {
     const tasks = await Task.find();
 
     res.json(tasks);
   } catch (error) {
     res.status(500).json({
-      message: error.message,
+      message: "Failed to fetch tasks",
     });
   }
 });
 
-
 // CREATE TASK
-router.post("/", async (req, res) => {
+router.post("/", protect, async (req, res) => {
   try {
-    const newTask = new Task({
+    const task = await Task.create({
       title: req.body.title,
       description: req.body.description,
       project: req.body.project,
@@ -31,30 +34,35 @@ router.post("/", async (req, res) => {
       dueDate: req.body.dueDate,
     });
 
-    const savedTask = await newTask.save();
-
-    res.status(201).json(savedTask);
+    res.status(201).json(task);
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({
-      message: error.message,
+      message: "Task creation failed",
     });
   }
 });
-
 
 // DELETE TASK
-router.delete("/:id", async (req, res) => {
-  try {
-    await Task.findByIdAndDelete(req.params.id);
+router.delete(
+  "/:id",
+  protect,
+  async (req, res) => {
+    try {
+      await Task.findByIdAndDelete(
+        req.params.id
+      );
 
-    res.json({
-      message: "Task deleted",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+      res.json({
+        message: "Task deleted",
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Delete failed",
+      });
+    }
   }
-});
+);
 
 module.exports = router;
