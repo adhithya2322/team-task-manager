@@ -11,13 +11,17 @@ function Dashboard() {
   const [projectTitle, setProjectTitle] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
 
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskStatus, setTaskStatus] = useState("Pending");
+
   // FETCH PROJECTS
   const fetchProjects = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/projects`);
+
       setProjects(res.data);
     } catch (error) {
-      console.log(error);
+      console.log("FETCH PROJECTS ERROR:", error);
     }
   };
 
@@ -25,9 +29,10 @@ function Dashboard() {
   const fetchTasks = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/tasks`);
+
       setTasks(res.data);
     } catch (error) {
-      console.log(error);
+      console.log("FETCH TASKS ERROR:", error);
     }
   };
 
@@ -40,39 +45,147 @@ function Dashboard() {
   const createProject = async (e) => {
     e.preventDefault();
 
-    try {
-      const res = await axios.post(`${API_URL}/api/projects`, {
-        title: projectTitle,
-        description: projectDescription,
-      });
+    if (
+      !projectTitle.trim() ||
+      !projectDescription.trim()
+    ) {
+      alert("Please fill all fields");
+      return;
+    }
 
-      setProjects([res.data, ...projects]);
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/projects`,
+        {
+          title: projectTitle,
+          description: projectDescription,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setProjects([response.data, ...projects]);
 
       setProjectTitle("");
       setProjectDescription("");
 
-      alert("Project Created");
+      alert("Project created successfully");
     } catch (error) {
-      console.log(error);
-      alert("Project creation failed");
+      console.log(
+        "CREATE PROJECT ERROR:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+          "Project creation failed"
+      );
     }
   };
 
   // DELETE PROJECT
   const deleteProject = async (id) => {
     try {
-      await axios.delete(`${API_URL}/api/projects/${id}`);
-
-      setProjects(
-        projects.filter((project) => project._id !== id)
+      await axios.delete(
+        `${API_URL}/api/projects/${id}`
       );
 
-      alert("Project Deleted");
+      setProjects(
+        projects.filter(
+          (project) => project._id !== id
+        )
+      );
+
+      alert("Project deleted successfully");
     } catch (error) {
-      console.log(error);
+      console.log(
+        "DELETE PROJECT ERROR:",
+        error.response?.data || error.message
+      );
+
       alert("Delete failed");
     }
   };
+
+  // CREATE TASK
+  const createTask = async (e) => {
+    e.preventDefault();
+
+    if (!taskTitle.trim()) {
+      alert("Please enter task title");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/tasks`,
+        {
+          title: taskTitle,
+          status: taskStatus,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setTasks([response.data, ...tasks]);
+
+      setTaskTitle("");
+      setTaskStatus("Pending");
+
+      alert("Task created successfully");
+    } catch (error) {
+      console.log(
+        "CREATE TASK ERROR:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+          "Task creation failed"
+      );
+    }
+  };
+
+  // DELETE TASK
+  const deleteTask = async (id) => {
+    try {
+      await axios.delete(
+        `${API_URL}/api/tasks/${id}`
+      );
+
+      setTasks(
+        tasks.filter((task) => task._id !== id)
+      );
+
+      alert("Task deleted successfully");
+    } catch (error) {
+      console.log(
+        "DELETE TASK ERROR:",
+        error.response?.data || error.message
+      );
+
+      alert("Task deletion failed");
+    }
+  };
+
+  // TASK COUNTS
+  const pendingTasks = tasks.filter(
+    (task) => task.status === "Pending"
+  ).length;
+
+  const completedTasks = tasks.filter(
+    (task) => task.status === "Completed"
+  ).length;
+
+  const inProgressTasks = tasks.filter(
+    (task) => task.status === "In Progress"
+  ).length;
 
   return (
     <div style={{ padding: "20px" }}>
@@ -80,15 +193,25 @@ function Dashboard() {
 
       <hr />
 
+      <h3>Pending Tasks: {pendingTasks}</h3>
+
+      <h3>Completed Tasks: {completedTasks}</h3>
+
+      <h3>In Progress Tasks: {inProgressTasks}</h3>
+
+      <hr />
+
+      {/* CREATE PROJECT */}
       <h2>Create Project</h2>
 
-      {/* IMPORTANT FORM */}
       <form onSubmit={createProject}>
         <input
           type="text"
           placeholder="Project Title"
           value={projectTitle}
-          onChange={(e) => setProjectTitle(e.target.value)}
+          onChange={(e) =>
+            setProjectTitle(e.target.value)
+          }
           required
         />
 
@@ -107,7 +230,6 @@ function Dashboard() {
         <br />
         <br />
 
-        {/* IMPORTANT */}
         <button type="submit">
           Create Project
         </button>
@@ -115,28 +237,113 @@ function Dashboard() {
 
       <hr />
 
+      {/* PROJECTS */}
       <h1>Projects</h1>
 
-      {projects.map((project) => (
-        <div
-          key={project._id}
-          style={{
-            border: "1px solid black",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
-        >
-          <h2>{project.title}</h2>
-
-          <p>{project.description}</p>
-
-          <button
-            onClick={() => deleteProject(project._id)}
+      {projects.length === 0 ? (
+        <p>No projects found</p>
+      ) : (
+        projects.map((project) => (
+          <div
+            key={project._id}
+            style={{
+              border: "1px solid black",
+              padding: "10px",
+              marginBottom: "10px",
+            }}
           >
-            Delete
-          </button>
-        </div>
-      ))}
+            <h2>{project.title}</h2>
+
+            <p>{project.description}</p>
+
+            <button
+              onClick={() =>
+                deleteProject(project._id)
+              }
+            >
+              Delete
+            </button>
+          </div>
+        ))
+      )}
+
+      <hr />
+
+      {/* CREATE TASK */}
+      <h2>Create Task</h2>
+
+      <form onSubmit={createTask}>
+        <input
+          type="text"
+          placeholder="Task Title"
+          value={taskTitle}
+          onChange={(e) =>
+            setTaskTitle(e.target.value)
+          }
+          required
+        />
+
+        <br />
+        <br />
+
+        <select
+          value={taskStatus}
+          onChange={(e) =>
+            setTaskStatus(e.target.value)
+          }
+        >
+          <option value="Pending">
+            Pending
+          </option>
+
+          <option value="In Progress">
+            In Progress
+          </option>
+
+          <option value="Completed">
+            Completed
+          </option>
+        </select>
+
+        <br />
+        <br />
+
+        <button type="submit">
+          Create Task
+        </button>
+      </form>
+
+      <hr />
+
+      {/* TASKS */}
+      <h1>Tasks</h1>
+
+      {tasks.length === 0 ? (
+        <p>No tasks found</p>
+      ) : (
+        tasks.map((task) => (
+          <div
+            key={task._id}
+            style={{
+              border: "1px solid black",
+              padding: "10px",
+              marginBottom: "10px",
+            }}
+          >
+            <h3>{task.title}</h3>
+
+            <p>Status: {task.status}</p>
+
+            <button
+              onClick={() =>
+                deleteTask(task._id)
+              }
+            >
+              Delete
+            </button>
+          </div>
+        ))
+      )}
     </div>
   );
 }
