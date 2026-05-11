@@ -8,27 +8,54 @@ function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
 
-  const [projectTitle, setProjectTitle] = useState("");
-  const [projectDescription, setProjectDescription] = useState("");
+  // PROJECT STATES
+  const [title, setTitle] = useState("");
+  const [description, setDescription] =
+    useState("");
 
-  const [taskTitle, setTaskTitle] = useState("");
-  const [taskStatus, setTaskStatus] = useState("Pending");
+  // TASK STATES
+  const [taskTitle, setTaskTitle] =
+    useState("");
+
+  const [taskDescription, setTaskDescription] =
+    useState("");
+
+  const [taskStatus, setTaskStatus] =
+    useState("Pending");
+
+  const [selectedProject, setSelectedProject] =
+    useState("");
+
+  const [assignedMember, setAssignedMember] =
+    useState("");
+
+  const [priority, setPriority] =
+    useState("Medium");
+
+  const [dueDate, setDueDate] = useState("");
 
   // FETCH PROJECTS
   const fetchProjects = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/projects`);
+      const res = await axios.get(
+        `${API_URL}/api/projects`
+      );
 
       setProjects(res.data);
     } catch (error) {
-      console.log("FETCH PROJECTS ERROR:", error);
+      console.log(
+        "FETCH PROJECTS ERROR:",
+        error
+      );
     }
   };
 
   // FETCH TASKS
   const fetchTasks = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/tasks`);
+      const res = await axios.get(
+        `${API_URL}/api/tasks`
+      );
 
       setTasks(res.data);
     } catch (error) {
@@ -42,38 +69,42 @@ function Dashboard() {
   }, []);
 
   // CREATE PROJECT
-  const createProject = async (e) => {
-  e.preventDefault();
+  const createProject = async () => {
+    if (!title.trim() || !description.trim()) {
+      alert("Please fill all fields");
+      return;
+    }
 
-  if (!title || !description) {
-    alert("Please fill all fields");
-    return;
-  }
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/projects`,
+        {
+          title: title,
+          description: description,
+        }
+      );
 
-  try {
-    const response = await axios.post(
-      `${API_URL}/api/projects`,
-      {
-        title: title,
-        description: description,
-      }
-    );
+      setProjects([
+        response.data,
+        ...projects,
+      ]);
 
-    setProjects([response.data, ...projects]);
+      setTitle("");
+      setDescription("");
 
-    setTitle("");
-    setDescription("");
+      alert("Project created successfully");
+    } catch (error) {
+      console.log(
+        "CREATE PROJECT ERROR:",
+        error.response?.data || error
+      );
 
-    alert("Project created successfully");
-  } catch (error) {
-    console.log(error.response?.data || error);
-
-    alert(
-      error.response?.data?.message ||
-        "Project creation failed"
-    );
-  }
-};
+      alert(
+        error.response?.data?.message ||
+          "Project creation failed"
+      );
+    }
+  };
 
   // DELETE PROJECT
   const deleteProject = async (id) => {
@@ -92,7 +123,7 @@ function Dashboard() {
     } catch (error) {
       console.log(
         "DELETE PROJECT ERROR:",
-        error.response?.data || error.message
+        error
       );
 
       alert("Delete failed");
@@ -100,9 +131,7 @@ function Dashboard() {
   };
 
   // CREATE TASK
-  const createTask = async (e) => {
-    e.preventDefault();
-
+  const createTask = async () => {
     if (!taskTitle.trim()) {
       alert("Please enter task title");
       return;
@@ -113,25 +142,33 @@ function Dashboard() {
         `${API_URL}/api/tasks`,
         {
           title: taskTitle,
+          description: taskDescription,
           status: taskStatus,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          project: selectedProject,
+          assignedTo: assignedMember,
+          priority: priority,
+          dueDate: dueDate,
         }
       );
 
-      setTasks([response.data, ...tasks]);
+      setTasks([
+        response.data,
+        ...tasks,
+      ]);
 
       setTaskTitle("");
+      setTaskDescription("");
       setTaskStatus("Pending");
+      setSelectedProject("");
+      setAssignedMember("");
+      setPriority("Medium");
+      setDueDate("");
 
       alert("Task created successfully");
     } catch (error) {
       console.log(
         "CREATE TASK ERROR:",
-        error.response?.data || error.message
+        error.response?.data || error
       );
 
       alert(
@@ -149,85 +186,69 @@ function Dashboard() {
       );
 
       setTasks(
-        tasks.filter((task) => task._id !== id)
+        tasks.filter(
+          (task) => task._id !== id
+        )
       );
 
       alert("Task deleted successfully");
     } catch (error) {
       console.log(
         "DELETE TASK ERROR:",
-        error.response?.data || error.message
+        error
       );
 
       alert("Task deletion failed");
     }
   };
 
-  // TASK COUNTS
-  const pendingTasks = tasks.filter(
-    (task) => task.status === "Pending"
-  ).length;
-
-  const completedTasks = tasks.filter(
-    (task) => task.status === "Completed"
-  ).length;
-
-  const inProgressTasks = tasks.filter(
-    (task) => task.status === "In Progress"
-  ).length;
-
   return (
     <div style={{ padding: "20px" }}>
-      <h1>Dashboard</h1>
+      <h1>Team Task Dashboard</h1>
 
-      <hr />
+      <h2>Welcome Admin (Admin)</h2>
 
-      <h3>Pending Tasks: {pendingTasks}</h3>
-
-      <h3>Completed Tasks: {completedTasks}</h3>
-
-      <h3>In Progress Tasks: {inProgressTasks}</h3>
+      <button>Logout</button>
 
       <hr />
 
       {/* CREATE PROJECT */}
       <h2>Create Project</h2>
 
-      <form onSubmit={createProject}>
+      <div>
         <input
           type="text"
           placeholder="Project Title"
-          value={projectTitle}
+          value={title}
           onChange={(e) =>
-            setProjectTitle(e.target.value)
+            setTitle(e.target.value)
           }
-          required
         />
 
         <br />
         <br />
 
-        <textarea
+        <input
+          type="text"
           placeholder="Project Description"
-          value={projectDescription}
+          value={description}
           onChange={(e) =>
-            setProjectDescription(e.target.value)
+            setDescription(e.target.value)
           }
-          required
         />
 
         <br />
         <br />
 
-        <button type="submit">
+        <button onClick={createProject}>
           Create Project
         </button>
-      </form>
+      </div>
 
       <hr />
 
       {/* PROJECTS */}
-      <h1>Projects</h1>
+      <h2>Projects</h2>
 
       {projects.length === 0 ? (
         <p>No projects found</p>
@@ -241,7 +262,7 @@ function Dashboard() {
               marginBottom: "10px",
             }}
           >
-            <h2>{project.title}</h2>
+            <h3>{project.title}</h3>
 
             <p>{project.description}</p>
 
@@ -261,7 +282,7 @@ function Dashboard() {
       {/* CREATE TASK */}
       <h2>Create Task</h2>
 
-      <form onSubmit={createTask}>
+      <div>
         <input
           type="text"
           placeholder="Task Title"
@@ -269,7 +290,57 @@ function Dashboard() {
           onChange={(e) =>
             setTaskTitle(e.target.value)
           }
-          required
+        />
+
+        <br />
+        <br />
+
+        <input
+          type="text"
+          placeholder="Description"
+          value={taskDescription}
+          onChange={(e) =>
+            setTaskDescription(e.target.value)
+          }
+        />
+
+        <br />
+        <br />
+
+        <select
+          value={selectedProject}
+          onChange={(e) =>
+            setSelectedProject(
+              e.target.value
+            )
+          }
+        >
+          <option value="">
+            Select Project
+          </option>
+
+          {projects.map((project) => (
+            <option
+              key={project._id}
+              value={project._id}
+            >
+              {project.title}
+            </option>
+          ))}
+        </select>
+
+        <br />
+        <br />
+
+        <input
+          type="text"
+          placeholder="Assign Member"
+          value={assignedMember}
+          onChange={(e) =>
+            setAssignedMember(
+              e.target.value
+            )
+          }
         />
 
         <br />
@@ -278,7 +349,9 @@ function Dashboard() {
         <select
           value={taskStatus}
           onChange={(e) =>
-            setTaskStatus(e.target.value)
+            setTaskStatus(
+              e.target.value
+            )
           }
         >
           <option value="Pending">
@@ -297,15 +370,48 @@ function Dashboard() {
         <br />
         <br />
 
-        <button type="submit">
-          Create Task
+        <select
+          value={priority}
+          onChange={(e) =>
+            setPriority(
+              e.target.value
+            )
+          }
+        >
+          <option value="Low">Low</option>
+
+          <option value="Medium">
+            Medium
+          </option>
+
+          <option value="High">High</option>
+        </select>
+
+        <br />
+        <br />
+
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(e) =>
+            setDueDate(
+              e.target.value
+            )
+          }
+        />
+
+        <br />
+        <br />
+
+        <button onClick={createTask}>
+          Add Task
         </button>
-      </form>
+      </div>
 
       <hr />
 
       {/* TASKS */}
-      <h1>Tasks</h1>
+      <h2>Tasks</h2>
 
       {tasks.length === 0 ? (
         <p>No tasks found</p>
@@ -321,7 +427,16 @@ function Dashboard() {
           >
             <h3>{task.title}</h3>
 
+            <p>
+              Description:{" "}
+              {task.description}
+            </p>
+
             <p>Status: {task.status}</p>
+
+            <p>
+              Priority: {task.priority}
+            </p>
 
             <button
               onClick={() =>
