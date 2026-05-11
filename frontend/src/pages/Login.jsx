@@ -29,17 +29,33 @@ function Login() {
         formData
       );
 
-      console.log(response.data);
+      console.log("LOGIN RESPONSE:", response.data);
 
-      localStorage.setItem(
-        "token",
-        response.data.token
-      );
+      // =========================
+      // SAFELY STORE TOKEN
+      // =========================
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(response.data.user)
-      );
+      if (response.data.token) {
+        localStorage.setItem(
+          "token",
+          response.data.token
+        );
+      }
+
+      // =========================
+      // SAFELY STORE USER
+      // =========================
+
+      if (response.data.user) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify(response.data.user)
+        );
+      } else {
+        console.log("User data missing");
+
+        localStorage.removeItem("user");
+      }
 
       alert("Login Successful");
 
@@ -48,7 +64,10 @@ function Login() {
       console.log("LOGIN ERROR:", error);
 
       if (error.response) {
-        alert(error.response.data.message);
+        alert(
+          error.response.data.message ||
+            "Login Failed"
+        );
       } else {
         alert("Server connection failed");
       }
@@ -84,7 +103,9 @@ function Login() {
         <br />
         <br />
 
-        <button type="submit">Login</button>
+        <button type="submit">
+          Login
+        </button>
       </form>
 
       <br />
