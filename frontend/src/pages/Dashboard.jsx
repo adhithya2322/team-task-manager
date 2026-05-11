@@ -5,17 +5,26 @@ import { useNavigate } from "react-router-dom";
 function Dashboard() {
   const navigate = useNavigate();
 
-  // SAFE USER PARSE
-  const storedUser = localStorage.getItem("user");
-
-  let user = null;
+  // SAFE USER LOAD
+  let user = {
+    name: "User",
+    role: "Admin",
+  };
 
   try {
-    user = storedUser
-      ? JSON.parse(storedUser)
-      : null;
+    const storedUser =
+      localStorage.getItem("user");
+
+    if (
+      storedUser &&
+      storedUser !== "undefined"
+    ) {
+      user = JSON.parse(storedUser);
+    }
   } catch (error) {
-    console.log("User parse error", error);
+    console.log("Invalid user data");
+
+    localStorage.removeItem("user");
   }
 
   const token = localStorage.getItem("token");
@@ -32,16 +41,33 @@ function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
 
-  const [projectName, setProjectName] = useState("");
-  const [projectDescription, setProjectDescription] = useState("");
+  const [projectName, setProjectName] =
+    useState("");
+
+  const [
+    projectDescription,
+    setProjectDescription,
+  ] = useState("");
 
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [project, setProject] = useState("");
-  const [assignedTo, setAssignedTo] = useState("");
-  const [status, setStatus] = useState("Pending");
-  const [priority, setPriority] = useState("Medium");
-  const [dueDate, setDueDate] = useState("");
+
+  const [description, setDescription] =
+    useState("");
+
+  const [project, setProject] =
+    useState("");
+
+  const [assignedTo, setAssignedTo] =
+    useState("");
+
+  const [status, setStatus] =
+    useState("Pending");
+
+  const [priority, setPriority] =
+    useState("Medium");
+
+  const [dueDate, setDueDate] =
+    useState("");
 
   // FETCH PROJECTS
   const fetchProjects = async () => {
@@ -51,9 +77,14 @@ function Dashboard() {
         config
       );
 
+      console.log("Projects:", res.data);
+
       setProjects(res.data || []);
     } catch (error) {
-      console.log("PROJECT FETCH ERROR", error);
+      console.log(
+        "PROJECT FETCH ERROR",
+        error
+      );
     }
   };
 
@@ -65,9 +96,14 @@ function Dashboard() {
         config
       );
 
+      console.log("Tasks:", res.data);
+
       setTasks(res.data || []);
     } catch (error) {
-      console.log("TASK FETCH ERROR", error);
+      console.log(
+        "TASK FETCH ERROR",
+        error
+      );
     }
   };
 
@@ -80,7 +116,8 @@ function Dashboard() {
         `${API}/projects`,
         {
           name: projectName,
-          description: projectDescription,
+          description:
+            projectDescription,
         },
         config
       );
@@ -93,6 +130,7 @@ function Dashboard() {
       fetchProjects();
     } catch (error) {
       console.log(error);
+
       alert("Project creation failed");
     }
   };
@@ -129,6 +167,7 @@ function Dashboard() {
       fetchTasks();
     } catch (error) {
       console.log(error);
+
       alert("Task creation failed");
     }
   };
@@ -146,6 +185,7 @@ function Dashboard() {
       fetchProjects();
     } catch (error) {
       console.log(error);
+
       alert("Delete failed");
     }
   };
@@ -163,6 +203,7 @@ function Dashboard() {
       fetchTasks();
     } catch (error) {
       console.log(error);
+
       alert("Delete failed");
     }
   };
@@ -171,6 +212,7 @@ function Dashboard() {
   useEffect(() => {
     if (!token) {
       navigate("/");
+
       return;
     }
 
@@ -181,6 +223,7 @@ function Dashboard() {
   // LOGOUT
   const logout = () => {
     localStorage.removeItem("user");
+
     localStorage.removeItem("token");
 
     navigate("/");
@@ -190,15 +233,18 @@ function Dashboard() {
   const totalTasks = tasks.length;
 
   const completedTasks = tasks.filter(
-    (task) => task.status === "Completed"
+    (task) =>
+      task.status === "Completed"
   ).length;
 
   const pendingTasks = tasks.filter(
-    (task) => task.status === "Pending"
+    (task) =>
+      task.status === "Pending"
   ).length;
 
   const inProgressTasks = tasks.filter(
-    (task) => task.status === "In Progress"
+    (task) =>
+      task.status === "In Progress"
   ).length;
 
   return (
@@ -206,8 +252,8 @@ function Dashboard() {
       <h1>Team Task Dashboard</h1>
 
       <h2>
-        Welcome {user?.name || "User"} (
-        {user?.role || "Admin"})
+        Welcome {user.name} (
+        {user.role})
       </h2>
 
       <button onClick={logout}>
@@ -225,7 +271,9 @@ function Dashboard() {
           placeholder="Project Name"
           value={projectName}
           onChange={(e) =>
-            setProjectName(e.target.value)
+            setProjectName(
+              e.target.value
+            )
           }
           required
         />
@@ -238,7 +286,9 @@ function Dashboard() {
           placeholder="Project Description"
           value={projectDescription}
           onChange={(e) =>
-            setProjectDescription(e.target.value)
+            setProjectDescription(
+              e.target.value
+            )
           }
           required
         />
@@ -275,7 +325,9 @@ function Dashboard() {
           placeholder="Description"
           value={description}
           onChange={(e) =>
-            setDescription(e.target.value)
+            setDescription(
+              e.target.value
+            )
           }
           required
         />
@@ -286,7 +338,9 @@ function Dashboard() {
         <select
           value={project}
           onChange={(e) =>
-            setProject(e.target.value)
+            setProject(
+              e.target.value
+            )
           }
           required
         >
@@ -312,7 +366,9 @@ function Dashboard() {
           placeholder="Assign Member"
           value={assignedTo}
           onChange={(e) =>
-            setAssignedTo(e.target.value)
+            setAssignedTo(
+              e.target.value
+            )
           }
         />
 
@@ -322,7 +378,9 @@ function Dashboard() {
         <select
           value={status}
           onChange={(e) =>
-            setStatus(e.target.value)
+            setStatus(
+              e.target.value
+            )
           }
         >
           <option value="Pending">
@@ -344,16 +402,22 @@ function Dashboard() {
         <select
           value={priority}
           onChange={(e) =>
-            setPriority(e.target.value)
+            setPriority(
+              e.target.value
+            )
           }
         >
-          <option value="Low">Low</option>
+          <option value="Low">
+            Low
+          </option>
 
           <option value="Medium">
             Medium
           </option>
 
-          <option value="High">High</option>
+          <option value="High">
+            High
+          </option>
         </select>
 
         <br />
@@ -363,7 +427,9 @@ function Dashboard() {
           type="date"
           value={dueDate}
           onChange={(e) =>
-            setDueDate(e.target.value)
+            setDueDate(
+              e.target.value
+            )
           }
         />
 
@@ -383,13 +449,17 @@ function Dashboard() {
       <p>Total Tasks: {totalTasks}</p>
 
       <p>
-        Completed Tasks: {completedTasks}
+        Completed Tasks:{" "}
+        {completedTasks}
       </p>
 
-      <p>Pending Tasks: {pendingTasks}</p>
+      <p>
+        Pending Tasks: {pendingTasks}
+      </p>
 
       <p>
-        In Progress Tasks: {inProgressTasks}
+        In Progress Tasks:{" "}
+        {inProgressTasks}
       </p>
 
       <hr />
@@ -397,77 +467,100 @@ function Dashboard() {
       {/* PROJECTS */}
       <h2>Projects</h2>
 
-      {projects.map((proj) => (
-        <div
-          key={proj._id}
-          style={{
-            border: "1px solid black",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
-        >
-          <h3>{proj.name}</h3>
-
-          <p>{proj.description}</p>
-
-          <button
-            onClick={() =>
-              deleteProject(proj._id)
-            }
+      {projects.length === 0 ? (
+        <p>No Projects Found</p>
+      ) : (
+        projects.map((proj) => (
+          <div
+            key={proj._id}
+            style={{
+              border:
+                "1px solid black",
+              padding: "10px",
+              marginBottom: "10px",
+            }}
           >
-            Delete
-          </button>
-        </div>
-      ))}
+            <h3>{proj.name}</h3>
+
+            <p>
+              {proj.description}
+            </p>
+
+            <button
+              onClick={() =>
+                deleteProject(
+                  proj._id
+                )
+              }
+            >
+              Delete
+            </button>
+          </div>
+        ))
+      )}
 
       <hr />
 
       {/* TASKS */}
       <h2>Tasks</h2>
 
-      {tasks.map((task) => (
-        <div
-          key={task._id}
-          style={{
-            border: "1px solid black",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
-        >
-          <h3>{task.title}</h3>
-
-          <p>{task.description}</p>
-
-          <p>
-            <b>Project:</b> {task.project}
-          </p>
-
-          <p>
-            <b>Assigned To:</b>{" "}
-            {task.assignedTo || "Not Assigned"}
-          </p>
-
-          <p>
-            <b>Status:</b> {task.status}
-          </p>
-
-          <p>
-            <b>Priority:</b> {task.priority}
-          </p>
-
-          <p>
-            <b>Due Date:</b> {task.dueDate}
-          </p>
-
-          <button
-            onClick={() =>
-              deleteTask(task._id)
-            }
+      {tasks.length === 0 ? (
+        <p>No Tasks Found</p>
+      ) : (
+        tasks.map((task) => (
+          <div
+            key={task._id}
+            style={{
+              border:
+                "1px solid black",
+              padding: "10px",
+              marginBottom: "10px",
+            }}
           >
-            Delete
-          </button>
-        </div>
-      ))}
+            <h3>{task.title}</h3>
+
+            <p>
+              {task.description}
+            </p>
+
+            <p>
+              <b>Project:</b>{" "}
+              {task.project}
+            </p>
+
+            <p>
+              <b>Assigned To:</b>{" "}
+              {task.assignedTo ||
+                "Not Assigned"}
+            </p>
+
+            <p>
+              <b>Status:</b>{" "}
+              {task.status}
+            </p>
+
+            <p>
+              <b>Priority:</b>{" "}
+              {task.priority}
+            </p>
+
+            <p>
+              <b>Due Date:</b>{" "}
+              {task.dueDate}
+            </p>
+
+            <button
+              onClick={() =>
+                deleteTask(
+                  task._id
+                )
+              }
+            >
+              Delete
+            </button>
+          </div>
+        ))
+      )}
     </div>
   );
 }

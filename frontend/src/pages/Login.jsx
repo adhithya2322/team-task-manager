@@ -13,6 +13,7 @@ function Login() {
   const API_URL =
     "https://team-task-manager-production-997b.up.railway.app/api/auth";
 
+  // HANDLE INPUT CHANGE
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -20,6 +21,7 @@ function Login() {
     });
   };
 
+  // HANDLE LOGIN
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -29,39 +31,44 @@ function Login() {
         formData
       );
 
-      console.log("LOGIN RESPONSE:", response.data);
+      console.log(
+        "LOGIN RESPONSE:",
+        response.data
+      );
 
-      // =========================
-      // SAFELY STORE TOKEN
-      // =========================
+      // SAVE TOKEN
+      localStorage.setItem(
+        "token",
+        response.data.token
+      );
 
-      if (response.data.token) {
-        localStorage.setItem(
-          "token",
-          response.data.token
-        );
-      }
+      // SAVE USER SAFELY
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          name:
+            response.data.name ||
+            "User",
 
-      // =========================
-      // SAFELY STORE USER
-      // =========================
+          email:
+            response.data.email ||
+            "",
 
-      if (response.data.user) {
-        localStorage.setItem(
-          "user",
-          JSON.stringify(response.data.user)
-        );
-      } else {
-        console.log("User data missing");
-
-        localStorage.removeItem("user");
-      }
+          role:
+            response.data.role ||
+            "Admin",
+        })
+      );
 
       alert("Login Successful");
 
       navigate("/dashboard");
+
     } catch (error) {
-      console.log("LOGIN ERROR:", error);
+      console.log(
+        "LOGIN ERROR:",
+        error
+      );
 
       if (error.response) {
         alert(
@@ -69,13 +76,15 @@ function Login() {
             "Login Failed"
         );
       } else {
-        alert("Server connection failed");
+        alert(
+          "Server connection failed"
+        );
       }
     }
   };
 
   return (
-    <div>
+    <div style={{ padding: "20px" }}>
       <h1>Login</h1>
 
       <form onSubmit={handleSubmit}>
