@@ -25,7 +25,7 @@ function Dashboard() {
   const fetchProjects = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/projects"
+        "https://team-task-manager-production-997b.up.railway.app/api/projects"
       );
 
       setProjects(res.data);
@@ -38,7 +38,7 @@ function Dashboard() {
   const fetchTasks = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/tasks"
+        "https://team-task-manager-production-997b.up.railway.app/api/tasks"
       );
 
       setTasks(res.data);
@@ -53,7 +53,7 @@ function Dashboard() {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/projects",
+        "https://team-task-manager-production-997b.up.railway.app/api/projects",
         {
           name: projectName,
           description: projectDescription,
@@ -78,7 +78,7 @@ function Dashboard() {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/tasks",
+        "https://team-task-manager-production-997b.up.railway.app/api/tasks",
         {
           title,
           description,
@@ -111,7 +111,7 @@ function Dashboard() {
   const deleteProject = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/projects/${id}`
+        `https://team-task-manager-production-997b.up.railway.app/api/projects/${id}`
       );
 
       alert("Project Deleted");
@@ -127,7 +127,7 @@ function Dashboard() {
   const deleteTask = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/tasks/${id}`
+        `https://team-task-manager-production-997b.up.railway.app/api/tasks/${id}`
       );
 
       alert("Task Deleted");
