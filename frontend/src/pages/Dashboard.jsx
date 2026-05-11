@@ -54,7 +54,6 @@ const Dashboard = () => {
     try {
       const res = await getTasks();
 
-      // MEMBER -> ONLY ASSIGNED TASKS
       if (user.role === "Member") {
         const filteredTasks = res.data.filter(
           (task) => task.assignedTo === user.email
@@ -62,7 +61,6 @@ const Dashboard = () => {
 
         setTasks(filteredTasks);
       } else {
-        // ADMIN -> ALL TASKS
         setTasks(res.data);
       }
     } catch (error) {
@@ -187,31 +185,66 @@ const Dashboard = () => {
   }).length;
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Team Task Dashboard</h1>
+    <div className="min-h-screen bg-gray-100 p-6">
+      {/* HEADER */}
 
-      <h2>
-        Welcome {user?.name} ({user?.role})
-      </h2>
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-2xl shadow-lg mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold">
+              Team Task Dashboard
+            </h1>
 
-      <button onClick={handleLogout}>Logout</button>
+            <h2 className="text-lg mt-2">
+              Welcome {user?.name} ({user?.role})
+            </h2>
+          </div>
 
-      <hr />
+          <button
+            onClick={handleLogout}
+            className="bg-white text-black px-5 py-2 rounded-lg font-semibold hover:bg-gray-200"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
 
-      <h2>Pending Tasks: {pendingCount}</h2>
-      <h2>Completed Tasks: {completedCount}</h2>
-      <h2>In Progress Tasks: {progressCount}</h2>
-      <h2>Overdue Tasks: {overdueCount}</h2>
+      {/* COUNTS */}
 
-      <hr />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-yellow-400 p-5 rounded-xl shadow-lg">
+          <h2 className="text-3xl font-bold">{pendingCount}</h2>
+          <p className="font-semibold">Pending Tasks</p>
+        </div>
 
-      {/* ================= ADMIN ONLY PROJECT SECTION ================= */}
+        <div className="bg-green-500 text-white p-5 rounded-xl shadow-lg">
+          <h2 className="text-3xl font-bold">{completedCount}</h2>
+          <p className="font-semibold">Completed Tasks</p>
+        </div>
+
+        <div className="bg-blue-500 text-white p-5 rounded-xl shadow-lg">
+          <h2 className="text-3xl font-bold">{progressCount}</h2>
+          <p className="font-semibold">In Progress</p>
+        </div>
+
+        <div className="bg-red-500 text-white p-5 rounded-xl shadow-lg">
+          <h2 className="text-3xl font-bold">{overdueCount}</h2>
+          <p className="font-semibold">Overdue Tasks</p>
+        </div>
+      </div>
+
+      {/* ADMIN ONLY PROJECT SECTION */}
 
       {user.role === "Admin" && (
-        <>
-          <h1>Create Project</h1>
+        <div className="bg-white p-6 rounded-2xl shadow-lg mb-8">
+          <h1 className="text-3xl font-bold mb-5">
+            Create Project
+          </h1>
 
-          <form onSubmit={handleCreateProject}>
+          <form
+            onSubmit={handleCreateProject}
+            className="space-y-4"
+          >
             <input
               type="text"
               placeholder="Project Title"
@@ -222,10 +255,8 @@ const Dashboard = () => {
                   title: e.target.value,
                 })
               }
+              className="w-full border p-3 rounded-lg"
             />
-
-            <br />
-            <br />
 
             <input
               type="text"
@@ -237,52 +268,65 @@ const Dashboard = () => {
                   description: e.target.value,
                 })
               }
+              className="w-full border p-3 rounded-lg"
             />
 
-            <br />
-            <br />
-
-            <button type="submit">Create Project</button>
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
+            >
+              Create Project
+            </button>
           </form>
-
-          <hr />
-        </>
+        </div>
       )}
 
-      {/* ================= PROJECTS ================= */}
+      {/* PROJECTS */}
 
-      <h1>Projects</h1>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-5">Projects</h1>
 
-      {projects.map((project) => (
-        <div
-          key={project._id}
-          style={{
-            border: "1px solid gray",
-            margin: "10px",
-            padding: "10px",
-          }}
-        >
-          <h2>{project.title}</h2>
+        <div className="grid md:grid-cols-2 gap-5">
+          {projects.map((project) => (
+            <div
+              key={project._id}
+              className="bg-white p-5 rounded-2xl shadow-lg"
+            >
+              <h2 className="text-2xl font-bold">
+                {project.title}
+              </h2>
 
-          <p>{project.description}</p>
+              <p className="text-gray-600 mt-2">
+                {project.description}
+              </p>
 
-          {user.role === "Admin" && (
-            <button onClick={() => handleDeleteProject(project._id)}>
-              Delete
-            </button>
-          )}
+              {user.role === "Admin" && (
+                <button
+                  onClick={() =>
+                    handleDeleteProject(project._id)
+                  }
+                  className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
 
-      <hr />
-
-      {/* ================= ADMIN ONLY TASK SECTION ================= */}
+      {/* ADMIN ONLY TASK SECTION */}
 
       {user.role === "Admin" && (
-        <>
-          <h1>Create Task</h1>
+        <div className="bg-white p-6 rounded-2xl shadow-lg mb-8">
+          <h1 className="text-3xl font-bold mb-5">
+            Create Task
+          </h1>
 
-          <form onSubmit={handleCreateTask}>
+          <form
+            onSubmit={handleCreateTask}
+            className="space-y-4"
+          >
             <input
               type="text"
               placeholder="Task Title"
@@ -293,10 +337,8 @@ const Dashboard = () => {
                   title: e.target.value,
                 })
               }
+              className="w-full border p-3 rounded-lg"
             />
-
-            <br />
-            <br />
 
             <input
               type="text"
@@ -308,10 +350,8 @@ const Dashboard = () => {
                   description: e.target.value,
                 })
               }
+              className="w-full border p-3 rounded-lg"
             />
-
-            <br />
-            <br />
 
             <select
               value={taskData.project}
@@ -321,18 +361,19 @@ const Dashboard = () => {
                   project: e.target.value,
                 })
               }
+              className="w-full border p-3 rounded-lg"
             >
               <option value="">Select Project</option>
 
               {projects.map((project) => (
-                <option key={project._id} value={project.title}>
+                <option
+                  key={project._id}
+                  value={project.title}
+                >
                   {project.title}
                 </option>
               ))}
             </select>
-
-            <br />
-            <br />
 
             <input
               type="text"
@@ -344,10 +385,8 @@ const Dashboard = () => {
                   assignedTo: e.target.value,
                 })
               }
+              className="w-full border p-3 rounded-lg"
             />
-
-            <br />
-            <br />
 
             <select
               value={taskData.status}
@@ -357,14 +396,14 @@ const Dashboard = () => {
                   status: e.target.value,
                 })
               }
+              className="w-full border p-3 rounded-lg"
             >
               <option value="Pending">Pending</option>
-              <option value="In Progress">In Progress</option>
+              <option value="In Progress">
+                In Progress
+              </option>
               <option value="Completed">Completed</option>
             </select>
-
-            <br />
-            <br />
 
             <select
               value={taskData.priority}
@@ -374,14 +413,12 @@ const Dashboard = () => {
                   priority: e.target.value,
                 })
               }
+              className="w-full border p-3 rounded-lg"
             >
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
               <option value="High">High</option>
             </select>
-
-            <br />
-            <br />
 
             <input
               type="date"
@@ -392,75 +429,113 @@ const Dashboard = () => {
                   dueDate: e.target.value,
                 })
               }
+              className="w-full border p-3 rounded-lg"
             />
 
-            <br />
-            <br />
-
-            <button type="submit">Add Task</button>
+            <button
+              type="submit"
+              className="bg-purple-600 text-white px-5 py-3 rounded-lg hover:bg-purple-700"
+            >
+              Add Task
+            </button>
           </form>
-
-          <hr />
-        </>
+        </div>
       )}
 
-      {/* ================= TASKS ================= */}
+      {/* TASKS */}
 
-      <h1>Tasks</h1>
+      <div>
+        <h1 className="text-3xl font-bold mb-5">Tasks</h1>
 
-      {tasks.map((task) => (
-        <div
-          key={task._id}
-          style={{
-            border: "1px solid gray",
-            margin: "10px",
-            padding: "10px",
-          }}
-        >
-          <h2>{task.title}</h2>
+        <div className="grid md:grid-cols-2 gap-5">
+          {tasks.map((task) => (
+            <div
+              key={task._id}
+              className="bg-white p-5 rounded-2xl shadow-lg"
+            >
+              <h2 className="text-2xl font-bold">
+                {task.title}
+              </h2>
 
-          <p>Description: {task.description}</p>
+              <p className="mt-3">
+                <span className="font-semibold">
+                  Description:
+                </span>{" "}
+                {task.description}
+              </p>
 
-          <p>Status: {task.status}</p>
+              <p className="mt-2">
+                <span className="font-semibold">
+                  Status:
+                </span>{" "}
+                {task.status}
+              </p>
 
-          <p>Priority: {task.priority}</p>
+              <p className="mt-2">
+                <span className="font-semibold">
+                  Priority:
+                </span>{" "}
+                {task.priority}
+              </p>
 
-          <p>Assigned To: {task.assignedTo}</p>
+              <p className="mt-2">
+                <span className="font-semibold">
+                  Assigned To:
+                </span>{" "}
+                {task.assignedTo}
+              </p>
 
-          <p>Project: {task.project}</p>
+              <p className="mt-2">
+                <span className="font-semibold">
+                  Project:
+                </span>{" "}
+                {task.project}
+              </p>
 
-          <p>
-            Due Date:{" "}
-            {task.dueDate
-              ? new Date(task.dueDate).toLocaleDateString()
-              : "No Date"}
-          </p>
+              <p className="mt-2">
+                <span className="font-semibold">
+                  Due Date:
+                </span>{" "}
+                {task.dueDate
+                  ? new Date(
+                      task.dueDate
+                    ).toLocaleDateString()
+                  : "No Date"}
+              </p>
 
-          {/* STATUS UPDATE FOR BOTH ADMIN & MEMBER */}
+              <select
+                value={task.status}
+                onChange={(e) =>
+                  handleStatusChange(
+                    task._id,
+                    e.target.value
+                  )
+                }
+                className="border p-2 rounded-lg mt-4"
+              >
+                <option value="Pending">Pending</option>
+                <option value="In Progress">
+                  In Progress
+                </option>
+                <option value="Completed">
+                  Completed
+                </option>
+              </select>
 
-          <select
-            value={task.status}
-            onChange={(e) =>
-              handleStatusChange(task._id, e.target.value)
-            }
-          >
-            <option value="Pending">Pending</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-          </select>
-
-          <br />
-          <br />
-
-          {/* DELETE ONLY FOR ADMIN */}
-
-          {user.role === "Admin" && (
-            <button onClick={() => handleDeleteTask(task._id)}>
-              Delete
-            </button>
-          )}
+              {user.role === "Admin" && (
+                <button
+                  onClick={() =>
+                    handleDeleteTask(task._id)
+                  }
+                  className="ml-3 mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 };

@@ -61,44 +61,58 @@ function Login() {
   };
 
   return (
-    <div>
-      <h1>Login</h1>
-
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Enter Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
-
-        <br />
-        <br />
-
-        <input
-          type="password"
-          name="password"
-          placeholder="Enter Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-
-        <br />
-        <br />
-
-        <button type="submit">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 px-4">
+      <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">
+        
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">
           Login
-        </button>
-      </form>
+        </h1>
 
-      <br />
+        <p className="text-center text-gray-500 mb-8">
+          Team Task Manager
+        </p>
 
-      <Link to="/register">
-        Create account
-      </Link>
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-5"
+        >
+          <input
+            type="email"
+            name="email"
+            placeholder="Enter Email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Enter Password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-semibold transition duration-300"
+          >
+            Login
+          </button>
+        </form>
+
+        <div className="text-center mt-6">
+          <Link
+            to="/register"
+            className="text-blue-600 hover:underline font-medium"
+          >
+            Create account
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

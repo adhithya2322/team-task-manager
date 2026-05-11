@@ -53,79 +53,90 @@ function Register() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Register</h1>
-
-      <form onSubmit={handleRegister}>
-        <input
-          type="text"
-          placeholder="Name"
-          value={name}
-          onChange={(e) =>
-            setName(e.target.value)
-          }
-        />
-
-        <br />
-        <br />
-
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
-        />
-
-        <br />
-        <br />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) =>
-            setPassword(
-              e.target.value
-            )
-          }
-        />
-
-        <br />
-        <br />
-
-        <select
-          value={role}
-          onChange={(e) =>
-            setRole(e.target.value)
-          }
-        >
-          <option value="Admin">
-            Admin
-          </option>
-
-          <option value="Member">
-            Member
-          </option>
-        </select>
-
-        <br />
-        <br />
-
-        <button type="submit">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-600 to-blue-500 px-4">
+      
+      <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">
+        
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">
           Register
-        </button>
-      </form>
+        </h1>
 
-      <br />
+        <p className="text-center text-gray-500 mb-8">
+          Create your Team Task Manager account
+        </p>
 
-      <p>
-        Already have account?{" "}
-        <Link to="/login">
-          Login
-        </Link>
-      </p>
+        <form
+          onSubmit={handleRegister}
+          className="space-y-5"
+        >
+          <input
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) =>
+              setName(e.target.value)
+            }
+            className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) =>
+              setEmail(e.target.value)
+            }
+            className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) =>
+              setPassword(
+                e.target.value
+              )
+            }
+            className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+
+          <select
+            value={role}
+            onChange={(e) =>
+              setRole(e.target.value)
+            }
+            className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            <option value="Admin">
+              Admin
+            </option>
+
+            <option value="Member">
+              Member
+            </option>
+          </select>
+
+          <button
+            type="submit"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg font-semibold transition duration-300"
+          >
+            Register
+          </button>
+        </form>
+
+        <div className="text-center mt-6">
+          <p className="text-gray-600">
+            Already have account?{" "}
+            <Link
+              to="/login"
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Login
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
