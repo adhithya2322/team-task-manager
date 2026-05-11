@@ -32,12 +32,6 @@ function Dashboard() {
   const API =
     "https://team-task-manager-production-997b.up.railway.app/api";
 
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
-
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
 
@@ -68,6 +62,13 @@ function Dashboard() {
 
   const [dueDate, setDueDate] =
     useState("");
+
+  // AUTH CONFIG
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
 
   // FETCH PROJECTS
   const fetchProjects = async () => {
@@ -108,55 +109,57 @@ function Dashboard() {
   };
 
   // CREATE PROJECT
-  const createProject = async () => {
-  try {
-    const token = localStorage.getItem("token");
+  const createProject = async (e) => {
+    e.preventDefault();
 
-    const response = await axios.post(
-      "https://team-task-manager-production-997b.up.railway.app/api/projects",
-      {
-        name: projectName,
-        description: projectDescription,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    try {
+      const response = await axios.post(
+        `${API}/projects`,
+        {
+          name: projectName,
+          description: projectDescription,
         },
-      }
-    );
-
-    console.log(response.data);
-
-    alert("Project created successfully");
-
-    fetchProjects();
-
-    setProjectName("");
-
-    setProjectDescription("");
-
-  } catch (error) {
-    console.log("PROJECT ERROR:", error);
-
-    if (error.response) {
-      console.log(error.response.data);
-
-      alert(
-        error.response.data.message ||
-          "Project creation failed"
+        config
       );
-    } else {
-      alert("Server connection failed");
+
+      console.log(response.data);
+
+      alert("Project Created Successfully");
+
+      setProjects([
+        ...projects,
+        response.data,
+      ]);
+
+      setProjectName("");
+
+      setProjectDescription("");
+
+    } catch (error) {
+      console.log(
+        "PROJECT ERROR:",
+        error
+      );
+
+      if (error.response) {
+        console.log(error.response.data);
+
+        alert(
+          error.response.data.message ||
+            "Project creation failed"
+        );
+      } else {
+        alert("Server connection failed");
+      }
     }
-  }
-};
+  };
 
   // CREATE TASK
   const createTask = async (e) => {
     e.preventDefault();
 
     try {
-      await axios.post(
+      const response = await axios.post(
         `${API}/tasks`,
         {
           title,
@@ -170,7 +173,14 @@ function Dashboard() {
         config
       );
 
-      alert("Task Created");
+      console.log(response.data);
+
+      alert("Task Created Successfully");
+
+      setTasks([
+        ...tasks,
+        response.data,
+      ]);
 
       setTitle("");
       setDescription("");
@@ -180,27 +190,55 @@ function Dashboard() {
       setPriority("Medium");
       setDueDate("");
 
-      fetchTasks();
     } catch (error) {
-      console.log(error);
+      console.log(
+        "TASK ERROR:",
+        error
+      );
 
-      alert("Task creation failed");
+      if (error.response) {
+        console.log(error.response.data);
+
+        alert(
+          error.response.data.message ||
+            "Task creation failed"
+        );
+      } else {
+        alert("Server connection failed");
+      }
     }
   };
 
   // DELETE PROJECT
   const deleteProject = async (id) => {
     try {
-      await axios.delete(
+      const response = await axios.delete(
         `${API}/projects/${id}`,
         config
       );
 
-      alert("Project Deleted");
+      console.log(response.data);
 
-      fetchProjects();
+      setProjects(
+        projects.filter(
+          (project) =>
+            project._id !== id
+        )
+      );
+
+      alert(
+        "Project Deleted Successfully"
+      );
+
     } catch (error) {
-      console.log(error);
+      console.log(
+        "DELETE PROJECT ERROR:",
+        error
+      );
+
+      if (error.response) {
+        console.log(error.response.data);
+      }
 
       alert("Delete failed");
     }
@@ -209,16 +247,32 @@ function Dashboard() {
   // DELETE TASK
   const deleteTask = async (id) => {
     try {
-      await axios.delete(
+      const response = await axios.delete(
         `${API}/tasks/${id}`,
         config
       );
 
-      alert("Task Deleted");
+      console.log(response.data);
 
-      fetchTasks();
+      setTasks(
+        tasks.filter(
+          (task) => task._id !== id
+        )
+      );
+
+      alert(
+        "Task Deleted Successfully"
+      );
+
     } catch (error) {
-      console.log(error);
+      console.log(
+        "DELETE TASK ERROR:",
+        error
+      );
+
+      if (error.response) {
+        console.log(error.response.data);
+      }
 
       alert("Delete failed");
     }
@@ -233,6 +287,7 @@ function Dashboard() {
     }
 
     fetchProjects();
+
     fetchTasks();
   }, []);
 
