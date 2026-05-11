@@ -1,55 +1,62 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
 
 function Login() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  const handleLogin = async (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      console.log("Sending Login Request");
-
-      const res = await axios.post(
-        "https://team-task-manager-production-997b.up.railway.app/api/users/login",
-        {
-          email,
-          password,
-        }
+      const response = await axios.post(
+        "https://team-task-manager-production-997b.up.railway.app/api/auth/login",
+        formData
       );
 
-      console.log(res.data);
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify(response.data.user)
+      );
 
-      alert("Login Success");
-
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      alert("Login successful");
 
       navigate("/dashboard");
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
 
-      if (err.response) {
-        alert(err.response.data.message);
-      } else {
-        alert("Cannot connect to backend");
-      }
+      alert(
+        error.response?.data?.message ||
+          "Login failed"
+      );
     }
   };
 
   return (
-    <div style={{ padding: "50px" }}>
+    <div>
       <h1>Login</h1>
 
-      <form onSubmit={handleLogin}>
+      <form onSubmit={handleSubmit}>
         <input
           type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          name="email"
+          placeholder="Enter Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
         />
 
         <br />
@@ -57,9 +64,11 @@ function Login() {
 
         <input
           type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          name="password"
+          placeholder="Enter Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
         />
 
         <br />
@@ -70,7 +79,9 @@ function Login() {
 
       <br />
 
-      <Link to="/register">Create account</Link>
+      <Link to="/register">
+        Create account
+      </Link>
     </div>
   );
 }
