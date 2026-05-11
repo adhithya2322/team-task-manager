@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const API_URL =
   "https://team-task-manager-production-997b.up.railway.app";
 
 function Dashboard() {
+  const navigate = useNavigate();
+
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
+
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
 
@@ -33,6 +40,12 @@ function Dashboard() {
     useState("Medium");
 
   const [dueDate, setDueDate] = useState("");
+
+  // LOGOUT
+  const logout = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   // FETCH PROJECTS
   const fetchProjects = async () => {
@@ -212,13 +225,23 @@ function Dashboard() {
       task.status === "In Progress"
   ).length;
 
+  const overdueTasks = tasks.filter(
+    (task) =>
+      new Date(task.dueDate) < new Date() &&
+      task.status !== "Completed"
+  ).length;
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>Team Task Dashboard</h1>
 
-      <h2>Welcome Admin (Admin)</h2>
+      <h2>
+        Welcome {user?.name} ({user?.role})
+      </h2>
 
-      <button>Logout</button>
+      <button onClick={logout}>
+        Logout
+      </button>
 
       <hr />
 
@@ -232,42 +255,51 @@ function Dashboard() {
         In Progress Tasks: {inProgressCount}
       </h3>
 
-      <hr />
-
-      {/* CREATE PROJECT */}
-      <h2>Create Project</h2>
-
-      <div>
-        <input
-          type="text"
-          placeholder="Project Title"
-          value={title}
-          onChange={(e) =>
-            setTitle(e.target.value)
-          }
-        />
-
-        <br />
-        <br />
-
-        <input
-          type="text"
-          placeholder="Project Description"
-          value={description}
-          onChange={(e) =>
-            setDescription(e.target.value)
-          }
-        />
-
-        <br />
-        <br />
-
-        <button onClick={createProject}>
-          Create Project
-        </button>
-      </div>
+      <h3>Overdue Tasks: {overdueTasks}</h3>
 
       <hr />
+
+      {/* ADMIN ONLY */}
+      {user?.role === "Admin" && (
+        <>
+          {/* CREATE PROJECT */}
+          <h2>Create Project</h2>
+
+          <div>
+            <input
+              type="text"
+              placeholder="Project Title"
+              value={title}
+              onChange={(e) =>
+                setTitle(e.target.value)
+              }
+            />
+
+            <br />
+            <br />
+
+            <input
+              type="text"
+              placeholder="Project Description"
+              value={description}
+              onChange={(e) =>
+                setDescription(
+                  e.target.value
+                )
+              }
+            />
+
+            <br />
+            <br />
+
+            <button onClick={createProject}>
+              Create Project
+            </button>
+          </div>
+
+          <hr />
+        </>
+      )}
 
       {/* PROJECTS */}
       <h1>Projects</h1>
@@ -285,13 +317,15 @@ function Dashboard() {
 
           <p>{project.description}</p>
 
-          <button
-            onClick={() =>
-              deleteProject(project._id)
-            }
-          >
-            Delete
-          </button>
+          {user?.role === "Admin" && (
+            <button
+              onClick={() =>
+                deleteProject(project._id)
+              }
+            >
+              Delete
+            </button>
+          )}
         </div>
       ))}
 
@@ -454,6 +488,15 @@ function Dashboard() {
 
           <p>
             Assigned To: {task.assignedTo}
+          </p>
+
+          <p>
+            Due Date:{" "}
+            {task.dueDate
+              ? new Date(
+                  task.dueDate
+                ).toLocaleDateString()
+              : "No Date"}
           </p>
 
           <select

@@ -1,113 +1,141 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
-function Register() {
+const API_URL =
+  "https://your-backend-url.up.railway.app";
+
+export default function Register() {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "Admin",
-  });
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("Member");
 
-  const API_URL =
-    "https://team-task-manager-production-997b.up.railway.app/api/auth";
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     try {
       const response = await axios.post(
-        `${API_URL}/register`,
-        formData
+        `${API_URL}/api/auth/register`,
+        {
+          name,
+          email,
+          password,
+          role,
+        }
       );
-
-      console.log(response.data);
 
       alert("Registration Successful");
 
-      navigate("/");
-    } catch (error) {
-      console.log("REGISTER ERROR:", error);
+      localStorage.setItem(
+        "user",
+        JSON.stringify(response.data)
+      );
 
-      if (error.response) {
-        alert(error.response.data.message);
-      } else {
-        alert("Server connection failed");
-      }
+      navigate("/dashboard");
+    } catch (error) {
+      console.log(error);
+
+      alert(
+        error.response?.data?.message ||
+          "Registration failed"
+      );
     }
   };
 
   return (
-    <div>
+    <div
+      style={{
+        width: "350px",
+        margin: "50px auto",
+      }}
+    >
       <h1>Register</h1>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleRegister}>
         <input
           type="text"
-          name="name"
-          placeholder="Enter Name"
-          value={formData.name}
-          onChange={handleChange}
+          placeholder="Name"
+          value={name}
+          onChange={(e) =>
+            setName(e.target.value)
+          }
           required
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "10px",
+          }}
         />
-
-        <br />
-        <br />
 
         <input
           type="email"
-          name="email"
-          placeholder="Enter Email"
-          value={formData.email}
-          onChange={handleChange}
+          placeholder="Email"
+          value={email}
+          onChange={(e) =>
+            setEmail(e.target.value)
+          }
           required
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "10px",
+          }}
         />
-
-        <br />
-        <br />
 
         <input
           type="password"
-          name="password"
-          placeholder="Enter Password"
-          value={formData.password}
-          onChange={handleChange}
+          placeholder="Password"
+          value={password}
+          onChange={(e) =>
+            setPassword(e.target.value)
+          }
           required
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "10px",
+          }}
         />
 
-        <br />
-        <br />
-
         <select
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
+          value={role}
+          onChange={(e) =>
+            setRole(e.target.value)
+          }
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "10px",
+          }}
         >
-          <option value="Admin">Admin</option>
-          <option value="Member">Member</option>
+          <option value="Member">
+            Member
+          </option>
+
+          <option value="Admin">
+            Admin
+          </option>
         </select>
 
-        <br />
-        <br />
-
-        <button type="submit">Register</button>
+        <button
+          type="submit"
+          style={{
+            width: "100%",
+            padding: "10px",
+            cursor: "pointer",
+          }}
+        >
+          Register
+        </button>
       </form>
 
-      <br />
-
-      <Link to="/">Login</Link>
+      <p style={{ marginTop: "15px" }}>
+        Already have an account?{" "}
+        <Link to="/login">Login</Link>
+      </p>
     </div>
   );
 }
-
-export default Register;
