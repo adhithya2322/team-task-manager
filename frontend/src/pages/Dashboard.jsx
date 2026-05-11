@@ -43,48 +43,37 @@ function Dashboard() {
 
   // CREATE PROJECT
   const createProject = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (
-      !projectTitle.trim() ||
-      !projectDescription.trim()
-    ) {
-      alert("Please fill all fields");
-      return;
-    }
+  if (!title || !description) {
+    alert("Please fill all fields");
+    return;
+  }
 
-    try {
-      const response = await axios.post(
-        `${API_URL}/api/projects`,
-        {
-          title: projectTitle,
-          description: projectDescription,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  try {
+    const response = await axios.post(
+      `${API_URL}/api/projects`,
+      {
+        title: title,
+        description: description,
+      }
+    );
 
-      setProjects([response.data, ...projects]);
+    setProjects([response.data, ...projects]);
 
-      setProjectTitle("");
-      setProjectDescription("");
+    setTitle("");
+    setDescription("");
 
-      alert("Project created successfully");
-    } catch (error) {
-      console.log(
-        "CREATE PROJECT ERROR:",
-        error.response?.data || error.message
-      );
+    alert("Project created successfully");
+  } catch (error) {
+    console.log(error.response?.data || error);
 
-      alert(
-        error.response?.data?.message ||
-          "Project creation failed"
-      );
-    }
-  };
+    alert(
+      error.response?.data?.message ||
+        "Project creation failed"
+    );
+  }
+};
 
   // DELETE PROJECT
   const deleteProject = async (id) => {
