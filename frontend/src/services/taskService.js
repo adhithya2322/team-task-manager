@@ -21,3 +21,5 @@ export const updateTaskStatus = async (id, status) => {
     status,
   });
 };
+
+export const updateTask = (id, taskData) => API.put(`/tasks/${id}`, taskData);

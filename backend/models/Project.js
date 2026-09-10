@@ -11,6 +11,10 @@ const projectSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    assignedMembers: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../services/api";
 
 function Login() {
   const navigate = useNavigate();
@@ -9,9 +9,6 @@ function Login() {
     email: "",
     password: "",
   });
-
-  const API_URL =
-    "https://team-task-manager-production-997b.up.railway.app/api/auth";
 
   const handleChange = (e) => {
     setFormData({
@@ -24,24 +21,26 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
-        `${API_URL}/login`,
-        formData
-      );
+      const response = await API.post("/auth/login", formData);
 
-      console.log(response.data);
+      console.log("LOGIN RESPONSE:", response.data);
+      const user = response.data.user || response.data;
+      console.log("LOGIN USER:", user);
 
+      // Save token
       localStorage.setItem(
         "token",
-        response.data.token
+        response.data.token || ""
       );
 
+      // Save user
       localStorage.setItem(
         "user",
         JSON.stringify({
-          name: response.data.name,
-          email: response.data.email,
-          role: response.data.role,
+          id: user._id || user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
         })
       );
 
@@ -53,7 +52,10 @@ function Login() {
       console.log("LOGIN ERROR:", error);
 
       if (error.response) {
-        alert(error.response.data.message);
+        alert(
+          error.response.data.message ||
+            "Login failed"
+        );
       } else {
         alert("Server connection failed");
       }
@@ -62,8 +64,9 @@ function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 px-4">
+
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">
-        
+
         <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">
           Login
         </h1>
@@ -76,6 +79,8 @@ function Login() {
           onSubmit={handleSubmit}
           className="space-y-5"
         >
+
+          {/* EMAIL */}
           <input
             type="email"
             name="email"
@@ -86,6 +91,7 @@ function Login() {
             className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
+          {/* PASSWORD */}
           <input
             type="password"
             name="password"
@@ -96,23 +102,29 @@ function Login() {
             className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
+          {/* LOGIN BUTTON */}
           <button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-semibold transition duration-300"
           >
             Login
           </button>
+
         </form>
 
         <div className="text-center mt-6">
+
           <Link
             to="/register"
             className="text-blue-600 hover:underline font-medium"
           >
             Create account
           </Link>
+
         </div>
+
       </div>
+
     </div>
   );
 }

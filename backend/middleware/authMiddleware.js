@@ -15,23 +15,28 @@ const protect = async (req, res, next) => {
         process.env.JWT_SECRET
       );
 
-      req.user = decoded;
+      req.user = await require("../models/User").findById(decoded.id).select("-password");
+      if (!req.user) return res.status(401).json({ message: "User not found" });
 
       next();
     } catch (error) {
       console.log(error);
 
       return res.status(401).json({
-        message: "Token Failed",
+        message: "Invalid or expired token",
       });
     }
   }
 
   if (!token) {
     return res.status(401).json({
-      message: "No Token",
+        message: "No token provided",
     });
   }
 };
 
-module.exports = { protect };
+const adminOnly = (req, res, next) => {
+  if (req.user?.role !== "Admin") return res.status(403).json({ message: "You are not authorized" });
+  next();
+};
+module.exports = { protect, adminOnly };

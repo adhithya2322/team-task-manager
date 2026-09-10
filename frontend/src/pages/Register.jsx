@@ -1,36 +1,26 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-
-const API_URL =
-  "https://team-task-manager-production-997b.up.railway.app";
+import API from "../services/api";
 
 function Register() {
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] =
-    useState("");
-
-  const [role, setRole] =
-    useState("Member");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("Member");
 
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    if (
-      !name ||
-      !email ||
-      !password
-    ) {
+    if (!name || !email || !password) {
       alert("Fill all fields");
       return;
     }
 
     try {
-      const res = await axios.post(
-        `${API_URL}/api/auth/register`,
+      const res = await API.post(
+        "/auth/register",
         {
           name,
           email,
@@ -39,11 +29,11 @@ function Register() {
         }
       );
 
-      alert("Registration successful");
+      alert(res.data.message || "Registration successful");
 
       navigate("/login");
     } catch (error) {
-      console.log(error);
+      console.log("Registration Error:", error);
 
       alert(
         error?.response?.data?.message ||
@@ -54,9 +44,9 @@ function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-600 to-blue-500 px-4">
-      
+
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">
-        
+
         <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">
           Register
         </h1>
@@ -69,43 +59,38 @@ function Register() {
           onSubmit={handleRegister}
           className="space-y-5"
         >
+
+          {/* NAME */}
           <input
             type="text"
             placeholder="Name"
             value={name}
-            onChange={(e) =>
-              setName(e.target.value)
-            }
+            onChange={(e) => setName(e.target.value)}
             className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
 
+          {/* EMAIL */}
           <input
             type="email"
             placeholder="Email"
             value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
 
+          {/* PASSWORD */}
           <input
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e) =>
-              setPassword(
-                e.target.value
-              )
-            }
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
 
+          {/* ROLE */}
           <select
             value={role}
-            onChange={(e) =>
-              setRole(e.target.value)
-            }
+            onChange={(e) => setRole(e.target.value)}
             className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
             <option value="Admin">
@@ -117,26 +102,34 @@ function Register() {
             </option>
           </select>
 
+          {/* REGISTER BUTTON */}
           <button
             type="submit"
             className="w-full bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg font-semibold transition duration-300"
           >
             Register
           </button>
+
         </form>
 
         <div className="text-center mt-6">
+
           <p className="text-gray-600">
             Already have account?{" "}
+
             <Link
               to="/login"
               className="text-blue-600 hover:underline font-medium"
             >
               Login
             </Link>
+
           </p>
+
         </div>
+
       </div>
+
     </div>
   );
 }
