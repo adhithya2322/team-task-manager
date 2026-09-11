@@ -3,11 +3,9 @@
 ## Live Demo
 
 Frontend:
-https://team-task-manager-oztv-git-main-adhithya-s-projects.vercel.app/
-
+https://team-task-manager-frontend-eux0.onrender.com/
 Backend:
-https://team-task-manager-production-997b.up.railway.app
-
+https://team-task-manager-backend-h6j2.onrender.com/
 ---
 
 # Project Overview
